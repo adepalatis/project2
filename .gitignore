@@ -6,3 +6,7 @@ tags
 /threads
 /userprog/filesys.dks
 /userprog/filesys.dsk
+/.metadata
+RemoteSystemTempFiles/
+*/.project
+*/.cproject
