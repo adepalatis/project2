@@ -219,13 +219,27 @@ load (const char *file_name, void (**eip) (void), void **esp)
 	printf("Hello from load\n");
 	char* token, save_ptr;
 	char* argv[128];
+	int arg_addrs[128];	// initialize an array of pointers to commandline arguments on the stack
 	int argc = 0;
 	for(token = strtok_r(file_name, " ", &save_ptr); token != NULL; token = strtok_r(NULL, " ", &save_ptr)) {
 		printf("%s\n", token);
 		argv[argc] = token;
 		argc++;
 	}
-	printf("initial stack pointer: %04x\n", *esp);
+	printf("PHYS_BASE: %d\n", PHYS_BASE);
+
+//	int MAX_ADDR = PHYS_BASE - PGSIZE;
+//	printf("MAX_ADDR: %d\n", MAX_ADDR);
+//	*esp = PHYS_BASE;	// set pointer to base of stack
+//	for(int k = 0; k < argc; k++) {
+//		int arg_len = strlen(argv[k]) + 1;
+//		(*(int*)esp) -= arg_len;
+//		if(*(int*)esp <= MAX_ADDR) {
+//			// handle stack overflow
+//		}
+//		strlcpy(*esp, argv[k], arg_len);	// push the argument onto the stack
+//		arg_addrs[k] = (int)*esp;	// save a pointer to the argument's position on the stack
+//	}
 
 	/* Allocate and activate page directory. */
 	t->pagedir = pagedir_create ();
@@ -240,7 +254,7 @@ load (const char *file_name, void (**eip) (void), void **esp)
 	  printf ("load: %s: open failed\n", file_name);
 	  goto done;
 	}
-
+	printf("mama, I made it\n");
 	/* Read and verify executable header. */
 	if (file_read (file, &ehdr, sizeof ehdr) != sizeof ehdr
 	  || memcmp (ehdr.e_ident, "\177ELF\1\1\1", 7)
