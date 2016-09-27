@@ -2,7 +2,12 @@ cscope.files
 cscope.out
 TAGS
 tags
-utils/Pintos.pm
-utils/pintos
-utils/pintos-gdb
-
+/utils
+/threads
+/userprog/filesys.dks
+/userprog/filesys.dsk
+/.metadata
+RemoteSystemTempFiles/
+*/.project
+*/.cproject
+*/.tags
