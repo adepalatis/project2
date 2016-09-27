@@ -215,17 +215,17 @@ load (const char *file_name, void (**eip) (void), void **esp)
 	bool success = false;
 	int i;
 
-	/* Tokenize the command from the command line */
-	printf("Hello from load\n");
-	char* token, save_ptr;
-	char* argv[128];
-	int arg_addrs[128];	// initialize an array of pointers to commandline arguments on the stack
-	int argc = 0;
-	for(token = strtok_r(file_name, " ", &save_ptr); token != NULL; token = strtok_r(NULL, " ", &save_ptr)) {
-		printf("%s\n", token);
-		argv[argc] = token;
-		argc++;
-	}
+//	/* Tokenize the command from the command line */
+//	printf("Hello from load\n");
+//	char* token, save_ptr;
+//	char* argv[128];
+//	int arg_addrs[128];	// initialize an array of pointers to commandline arguments on the stack
+//	int argc = 0;
+//	for(token = strtok_r(file_name, " ", &save_ptr); token != NULL; token = strtok_r(NULL, " ", &save_ptr)) {
+//		printf("%s\n", token);
+//		argv[argc] = token;
+//		argc++;
+//	}
 	printf("PHYS_BASE: %d\n", PHYS_BASE);
 
 //	int MAX_ADDR = PHYS_BASE - PGSIZE;
@@ -254,7 +254,6 @@ load (const char *file_name, void (**eip) (void), void **esp)
 	  printf ("load: %s: open failed\n", file_name);
 	  goto done;
 	}
-	printf("mama, I made it\n");
 	/* Read and verify executable header. */
 	if (file_read (file, &ehdr, sizeof ehdr) != sizeof ehdr
 	  || memcmp (ehdr.e_ident, "\177ELF\1\1\1", 7)
@@ -267,7 +266,6 @@ load (const char *file_name, void (**eip) (void), void **esp)
 	  printf ("load: %s: error loading executable\n", file_name);
 	  goto done;
 	}
-  pintf("papa, I made it\n");
 
 	/* Read program headers. */
 	file_ofs = ehdr.e_phoff;
@@ -459,15 +457,17 @@ setup_stack (const char* cmd, void **esp)
 	uint8_t *kpage;
 	bool success = false;
 
-//	printf("Hello from setup_stack\n");
-//	char* token, save_ptr;
-//	char* argv[128];
-//	int argc = 0;
-//	for(token = strtok_r(cmd, " ", &save_ptr); token != NULL; token = strtok_r(NULL, " ", &save_ptr)) {
-//		printf("%s\n", token);
-//		argv[argc] = token;
-//		argc++;
-//	}
+	printf("Hello from setup_stack\n");
+	/* Tokenize the command from the command line */
+	char* token, save_ptr;
+	char* argv[128];
+	int arg_addrs[128];	// initialize an array of pointers to commandline arguments on the stack
+	int argc = 0;
+	for(token = strtok_r(cmd, " ", &save_ptr); token != NULL; token = strtok_r(NULL, " ", &save_ptr)) {
+		printf("%s\n", token);
+		argv[argc] = token;
+		argc++;
+	}
 
 	kpage = palloc_get_page (PAL_USER | PAL_ZERO);
 	if (kpage != NULL)
