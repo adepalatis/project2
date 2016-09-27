@@ -214,33 +214,6 @@ load (const char *file_name, void (**eip) (void), void **esp)
 	off_t file_ofs;
 	bool success = false;
 	int i;
-
-//	/* Tokenize the command from the command line */
-//	printf("Hello from load\n");
-//	char* token, save_ptr;
-//	char* argv[128];
-//	int arg_addrs[128];	// initialize an array of pointers to commandline arguments on the stack
-//	int argc = 0;
-//	for(token = strtok_r(file_name, " ", &save_ptr); token != NULL; token = strtok_r(NULL, " ", &save_ptr)) {
-//		printf("%s\n", token);
-//		argv[argc] = token;
-//		argc++;
-//	}
-	printf("PHYS_BASE: %d\n", PHYS_BASE);
-
-//	int MAX_ADDR = PHYS_BASE - PGSIZE;
-//	printf("MAX_ADDR: %d\n", MAX_ADDR);
-//	*esp = PHYS_BASE;	// set pointer to base of stack
-//	for(int k = 0; k < argc; k++) {
-//		int arg_len = strlen(argv[k]) + 1;
-//		(*(int*)esp) -= arg_len;
-//		if(*(int*)esp <= MAX_ADDR) {
-//			// handle stack overflow
-//		}
-//		strlcpy(*esp, argv[k], arg_len);	// push the argument onto the stack
-//		arg_addrs[k] = (int)*esp;	// save a pointer to the argument's position on the stack
-//	}
-
 	/* Allocate and activate page directory. */
 	t->pagedir = pagedir_create ();
 	if (t->pagedir == NULL)
@@ -338,6 +311,7 @@ load (const char *file_name, void (**eip) (void), void **esp)
 	done:
 	/* We arrive here whether the load is successful or not. */
 	file_close (file);
+	printf("file closed successfully\n");
 	return success;
 }
 
@@ -472,11 +446,28 @@ setup_stack (const char* cmd, void **esp)
 	kpage = palloc_get_page (PAL_USER | PAL_ZERO);
 	if (kpage != NULL)
 	{
-	  success = install_page (((uint8_t *) PHYS_BASE) - PGSIZE, kpage, true);
-	  if (success)
-		*esp = PHYS_BASE;
-	  else
-		palloc_free_page (kpage);
+		printf("palloc worked whoo\n");
+		success = install_page (((uint8_t *) PHYS_BASE) - PGSIZE, kpage, true);
+		if (success) {
+			printf("success whoo\n");
+			*esp = PHYS_BASE;
+			int MAX_ADDR = PHYS_BASE - PGSIZE;
+			printf("MAX_ADDR: %d\n", MAX_ADDR);
+			*esp = PHYS_BASE;	// set pointer to base of stack
+			for(int k = 0; k < argc; k++) {
+				int arg_len = strlen(argv[k]) + 1;
+				(*(int*)esp) -= arg_len;
+				if(*(int*)esp <= MAX_ADDR) {
+					// handle stack overflow
+				}
+				strlcpy(*esp, argv[k], arg_len);	// push the argument onto the stack
+				arg_addrs[k] = (int)*esp;	// save a pointer to the argument's position on the stack
+			}
+			printf("SUCCESS!\n");
+		}
+		else {
+			palloc_free_page (kpage);
+		}
 	}
 	return success;
 }
