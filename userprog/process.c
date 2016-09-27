@@ -267,6 +267,7 @@ load (const char *file_name, void (**eip) (void), void **esp)
 	  printf ("load: %s: error loading executable\n", file_name);
 	  goto done;
 	}
+  pintf("papa, I made it\n");
 
 	/* Read program headers. */
 	file_ofs = ehdr.e_phoff;
