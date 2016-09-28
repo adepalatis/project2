@@ -42,6 +42,7 @@ process_execute (const char *file_name)
 	tid = thread_create (file_name, PRI_DEFAULT, start_process, fn_copy);
 	if (tid == TID_ERROR)
 	palloc_free_page (fn_copy);
+  
 	return tid;
 }
 
@@ -59,7 +60,6 @@ start_process (void *file_name_)
 	  if_.cs = SEL_UCSEG;
 	  if_.eflags = FLAG_IF | FLAG_MBS;
 	  success = load (file_name, &if_.eip, &if_.esp);
-
 	  /* If load failed, quit. */
 	  palloc_free_page (file_name);
 	  if (!success)
@@ -73,7 +73,8 @@ start_process (void *file_name_)
 		 and jump to it. */
 	  printf("%04x\n", &if_);
 	  asm volatile ("movl %0, %%esp; jmp intr_exit" : : "g" (&if_) : "memory");
-	  NOT_REACHED ();
+    NOT_REACHED ();
+
 }
 
 /* Waits for thread TID to die and returns its exit status.  If
@@ -221,7 +222,11 @@ load (const char *file_name, void (**eip) (void), void **esp)
 	process_activate ();
 
 	/* Open executable file. */
-	file = filesys_open (file_name);
+  char save[100];
+  char* file_name2 = malloc(strlen(file_name)+1);
+  strlcpy(file_name2, file_name, strlen(file_name)+1);
+  strtok_r(file_name2, " ", &save);
+	file = filesys_open (file_name2);
 	if (file == NULL)
 	{
 	  printf ("load: %s: open failed\n", file_name);
@@ -432,13 +437,13 @@ setup_stack (const char* cmd, void **esp)
 	bool success = false;
 
 //	printf("Hello from setup_stack\n");
+
 	/* Tokenize the command from the command line */
 	char* token, save_ptr;
 	char* argv[128];
 	int arg_addrs[128];	// initialize an array of pointers to commandline arguments on the stack
 	int argc = 0;
 	for(token = strtok_r(cmd, " ", &save_ptr); token != NULL; token = strtok_r(NULL, " ", &save_ptr)) {
-		printf("%s\n", token);
 		argv[argc] = token;
 		argc++;
 	}
@@ -449,7 +454,6 @@ setup_stack (const char* cmd, void **esp)
 //		printf("palloc worked whoo\n");
 		success = install_page (((uint8_t *) PHYS_BASE) - PGSIZE, kpage, true);
 		if (success) {
-//			printf("success whoo\n");
 			int MAX_ADDR = PHYS_BASE - PGSIZE;
 			*esp = PHYS_BASE;	// set pointer to base of stack
 
@@ -480,11 +484,12 @@ setup_stack (const char* cmd, void **esp)
 			/* Push argv (i.e., &argv[0]) to stack */
 
 			/* Push argc to stack */
+
+			}
 		}
 		else {
 			palloc_free_page (kpage);
 		}
-	}
 	return success;
 }
 
