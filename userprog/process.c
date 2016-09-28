@@ -42,6 +42,7 @@ process_execute (const char *file_name)
 	tid = thread_create (file_name, PRI_DEFAULT, start_process, fn_copy);
 	if (tid == TID_ERROR)
 	palloc_free_page (fn_copy);
+  
 	return tid;
 }
 
@@ -58,9 +59,7 @@ start_process (void *file_name_)
 	  if_.gs = if_.fs = if_.es = if_.ds = if_.ss = SEL_UDSEG;
 	  if_.cs = SEL_UCSEG;
 	  if_.eflags = FLAG_IF | FLAG_MBS;
-	  printf("esp: %04x\n", &if_.esp);
 	  success = load (file_name, &if_.eip, &if_.esp);
-
 	  /* If load failed, quit. */
 	  palloc_free_page (file_name);
 	  if (!success)
@@ -73,7 +72,8 @@ start_process (void *file_name_)
 		 we just point the stack pointer (%esp) to our stack frame
 		 and jump to it. */
 	  asm volatile ("movl %0, %%esp; jmp intr_exit" : : "g" (&if_) : "memory");
-	  NOT_REACHED ();
+    NOT_REACHED ();
+
 }
 
 /* Waits for thread TID to die and returns its exit status.  If
@@ -221,7 +221,11 @@ load (const char *file_name, void (**eip) (void), void **esp)
 	process_activate ();
 
 	/* Open executable file. */
-	file = filesys_open (file_name);
+  char save[100];
+  char* file_name2 = malloc(strlen(file_name)+1);
+  strlcpy(file_name2, file_name, strlen(file_name)+1);
+  strtok_r(file_name2, " ", &save);
+	file = filesys_open (file_name2);
 	if (file == NULL)
 	{
 	  printf ("load: %s: open failed\n", file_name);
@@ -431,14 +435,12 @@ setup_stack (const char* cmd, void **esp)
 	uint8_t *kpage;
 	bool success = false;
 
-	printf("Hello from setup_stack\n");
 	/* Tokenize the command from the command line */
 	char* token, save_ptr;
 	char* argv[128];
 	int arg_addrs[128];	// initialize an array of pointers to commandline arguments on the stack
 	int argc = 0;
 	for(token = strtok_r(cmd, " ", &save_ptr); token != NULL; token = strtok_r(NULL, " ", &save_ptr)) {
-		printf("%s\n", token);
 		argv[argc] = token;
 		argc++;
 	}
@@ -446,13 +448,11 @@ setup_stack (const char* cmd, void **esp)
 	kpage = palloc_get_page (PAL_USER | PAL_ZERO);
 	if (kpage != NULL)
 	{
-		printf("palloc worked whoo\n");
 		success = install_page (((uint8_t *) PHYS_BASE) - PGSIZE, kpage, true);
 		if (success) {
-			printf("success whoo\n");
 			*esp = PHYS_BASE;
 			int MAX_ADDR = PHYS_BASE - PGSIZE;
-			printf("MAX_ADDR: %d\n", MAX_ADDR);
+			//printf("MAX_ADDR: %d\n", MAX_ADDR);
 			*esp = PHYS_BASE;	// set pointer to base of stack
 			for(int k = 0; k < argc; k++) {
 				int arg_len = strlen(argv[k]) + 1;
@@ -462,8 +462,8 @@ setup_stack (const char* cmd, void **esp)
 				}
 				strlcpy(*esp, argv[k], arg_len);	// push the argument onto the stack
 				arg_addrs[k] = (int)*esp;	// save a pointer to the argument's position on the stack
+        *((int*) *esp) = PHYS_BASE;
 			}
-			printf("SUCCESS!\n");
 		}
 		else {
 			palloc_free_page (kpage);
