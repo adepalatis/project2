@@ -222,10 +222,10 @@ load (const char *file_name, void (**eip) (void), void **esp)
 	process_activate ();
 
 	/* Open executable file. */
-  char save[100];
-  char* file_name2 = malloc(strlen(file_name)+1);
-  strlcpy(file_name2, file_name, strlen(file_name)+1);
-  strtok_r(file_name2, " ", &save);
+	char* token, save_ptr;
+	char* fn_cpy = (char*)malloc(strlen(file_name) + 1);
+	strlcpy(fn_cpy, file_name, strlen(file_name) + 1);
+	char* file_name2 = strtok_r(fn_cpy, " ", &save_ptr);
 	file = filesys_open (file_name2);
 	if (file == NULL)
 	{
@@ -437,16 +437,17 @@ setup_stack (const char* cmd, void **esp)
 	bool success = false;
 
 //	printf("Hello from setup_stack\n");
-
 	/* Tokenize the command from the command line */
 	char* token, save_ptr;
 	char* argv[128];
 	int arg_addrs[128];	// initialize an array of pointers to commandline arguments on the stack
 	int argc = 0;
 	for(token = strtok_r(cmd, " ", &save_ptr); token != NULL; token = strtok_r(NULL, " ", &save_ptr)) {
+		printf("%s\n", token);
 		argv[argc] = token;
 		argc++;
 	}
+	arg_addrs[argc] = 0;	// append word alignment character
 
 	kpage = palloc_get_page (PAL_USER | PAL_ZERO);
 	if (kpage != NULL)
@@ -454,29 +455,40 @@ setup_stack (const char* cmd, void **esp)
 //		printf("palloc worked whoo\n");
 		success = install_page (((uint8_t *) PHYS_BASE) - PGSIZE, kpage, true);
 		if (success) {
+//			printf("success whoo\n");
 			int MAX_ADDR = PHYS_BASE - PGSIZE;
 			*esp = PHYS_BASE;	// set pointer to base of stack
 
 			/* Push arg values to stack */
-			for(int k = 0; k < argc; k++) {
+			for(int k = argc - 1; k >= 0; k--) {
 				int arg_len = strlen(argv[k]) + 1;
+				(*(int*)esp) -= arg_len;
+				printf("%04x\t %s\n", *(int*)esp, argv[k]);
 				if(*(int*)esp <= MAX_ADDR) {
 					// handle stack overflow
 				}
 				strlcpy(*esp, argv[k], arg_len);	// push the argument onto the stack
 				arg_addrs[k] = (int)*esp;	// save a pointer to the argument's position on the stack
-				(*(int*)esp) -= arg_len;
 			}
 
 			/* Word allign if necessary */
+			while((int)*esp % 4 != 0) {
+				(*(int*)esp) -= 1;
+			}
 
 			/* Push arg pointers to stack */
-			for(int k = argc - 1; k >= 0; k--) {
-				printf("%04x\t %04x\t %s\n", *(int*)esp, arg_addrs[k], (char*)arg_addrs[k]);
+			for(int k = argc; k >= 0; k--) {
+				/* Debugging prints */
+				if(arg_addrs[k] != 0) {
+					printf("%04x\t %04x\t %s\n", *(int*)esp, arg_addrs[k], (char*)arg_addrs[k]);
+				} else {
+					printf("%04x\t %d\t\n", *(int*)esp, arg_addrs[k]);
+				}
+
 				if(*(int*)esp <= MAX_ADDR) {
 					// handle stack overflow
 				} else {
-					*((int*)*esp) = arg_addrs[k];
+					*((int*)esp) = arg_addrs[k];
 				}
 				(*(int*)esp) -= 4;
 			}
@@ -484,12 +496,11 @@ setup_stack (const char* cmd, void **esp)
 			/* Push argv (i.e., &argv[0]) to stack */
 
 			/* Push argc to stack */
-
-			}
 		}
 		else {
 			palloc_free_page (kpage);
 		}
+	}
 	return success;
 }
 
