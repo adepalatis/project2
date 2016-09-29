@@ -72,7 +72,7 @@ void exit(int status) {
 
 }
 
-pit_t exec(const char* cmd_line) {
+pid_t exec(const char* cmd_line) {
 
 }
 
