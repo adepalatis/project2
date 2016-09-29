@@ -12,11 +12,24 @@ syscall_init (void)
   intr_register_int (0x30, 3, INTR_ON, syscall_handler, "syscall");
 }
 
+int chillPtr((void*) ptr){
+	if (ptr==NULL || ptr > PHYS_BASE){
+		return 0;
+	}
+	if (pagedir_get_page(thread_current()->pagedir, ptr) == NULL){
+		return 0;
+	}
+	return 1;
+}
+
 static void
 syscall_handler (struct intr_frame *f UNUSED) 
 {
 	int* sp = f->esp;
 	int syscall_num = *sp;
+	if (!(chillPtr(sp)&&chillPtr(sp+1)&&chillPtr(sp+2)&&chillPtr(sp+3))) {
+		exit(-1);
+	}
 	printf("%04x\t %d\n", sp, syscall_num);
 
 	printf ("system call!\n");
@@ -39,39 +52,39 @@ syscall_handler (struct intr_frame *f UNUSED)
 			break;
 
 		case SYS_CREATE:
-			f->eax= create((char*) (sp+1), *(unsigned*)(sp+2))
+			f->eax= create((char*) (sp+1), *(unsigned*)(sp+2));
 			break;
 
 		case SYS_REMOVE:
-			f->eax=remove((char*) (sp+1))
+			f->eax=remove((char*) (sp+1));
 			break;
 
 		case SYS_OPEN:
-			f->eax=open((char*) (sp+1))
+			f->eax=open((char*) (sp+1));
 			break;
 
 		case SYS_FILESIZE:
-			f->eax=filesize(*(int*)(sp+1))
+			f->eax=filesize(*(int*)(sp+1));
 			break;
 
 		case SYS_READ:
-			f->eax=read(*(int*)(sp+1), *(void**) (sp+2),*(unsigned*)(sp+3))
+			f->eax=read(*(int*)(sp+1), *(void**) (sp+2),*(unsigned*)(sp+3));
 			break;
 
 		case SYS_WRITE:
-			f->eax=write(*(int*)(sp+1), *(void**) (sp+2),*(unsigned*)(sp+3))
+			f->eax=write(*(int*)(sp+1), *(void**) (sp+2),*(unsigned*)(sp+3));
 			break;
 
 		case SYS_SEEK:
-			f->eax=seek(*(int*)(sp+1),*(unsigned*)(sp+2))
+			f->eax=seek(*(int*)(sp+1),*(unsigned*)(sp+2));
 			break;
 
 		case SYS_TELL:
-			f->eax=tell(*(int*)(sp+1))
+			f->eax=tell(*(int*)(sp+1));
 			break;
 
 		case SYS_CLOSE:
-			f->eax=close(*(int*)(sp+1))
+			f->eax=close(*(int*)(sp+1));
 			break;
 	}
 	thread_exit ();
