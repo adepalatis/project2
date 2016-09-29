@@ -23,42 +23,55 @@ syscall_handler (struct intr_frame *f UNUSED)
 
 	switch(syscall_num) {
 		case SYS_HALT:
+			halt();
 			break;
 
 		case SYS_EXIT:
+			exit(*(sp+1));
 			break;
 
 		case SYS_EXEC:
+			f->eax=exec((char *) (sp+1));
 			break;
 
 		case SYS_WAIT:
+			f->eax=wait(*(pid_t*) (sp+1));
 			break;
 
 		case SYS_CREATE:
+			f->eax= create((char*) (sp+1), *(unsigned*)(sp+2))
 			break;
 
 		case SYS_REMOVE:
+			f->eax=remove((char*) (sp+1))
 			break;
 
 		case SYS_OPEN:
+			f->eax=open((char*) (sp+1))
 			break;
 
 		case SYS_FILESIZE:
+			f->eax=filesize(*(int*)(sp+1))
 			break;
 
 		case SYS_READ:
+			f->eax=read(*(int*)(sp+1), *(void**) (sp+2),*(unsigned*)(sp+3))
 			break;
 
 		case SYS_WRITE:
+			f->eax=write(*(int*)(sp+1), *(void**) (sp+2),*(unsigned*)(sp+3))
 			break;
 
 		case SYS_SEEK:
+			f->eax=seek(*(int*)(sp+1),*(unsigned*)(sp+2))
 			break;
 
 		case SYS_TELL:
+			f->eax=tell(*(int*)(sp+1))
 			break;
 
 		case SYS_CLOSE:
+			f->eax=close(*(int*)(sp+1))
 			break;
 	}
 	thread_exit ();
