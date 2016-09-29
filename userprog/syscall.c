@@ -3,6 +3,8 @@
 #include <syscall-nr.h>
 #include "threads/interrupt.h"
 #include "threads/thread.h"
+#include "threads/vaddr.h"
+#include "threads/palloc.h"
 
 static void syscall_handler (struct intr_frame *);
 
@@ -31,7 +33,7 @@ syscall_handler (struct intr_frame *f UNUSED)
 			break;
 
 		case SYS_EXEC:
-			f->eax=exec((char *) (sp+1));
+			f->eax = exec((char *)*(sp+1));
 			break;
 
 		case SYS_WAIT:
@@ -39,39 +41,39 @@ syscall_handler (struct intr_frame *f UNUSED)
 			break;
 
 		case SYS_CREATE:
-			f->eax= create((char*) (sp+1), *(unsigned*)(sp+2))
+			f->eax= create((char*) (sp+1), *(unsigned*)(sp+2));
 			break;
 
 		case SYS_REMOVE:
-			f->eax=remove((char*) (sp+1))
+			f->eax=remove((char*) (sp+1));
 			break;
 
 		case SYS_OPEN:
-			f->eax=open((char*) (sp+1))
+			f->eax=open((char*) (sp+1));
 			break;
 
 		case SYS_FILESIZE:
-			f->eax=filesize(*(int*)(sp+1))
+			f->eax=filesize(*(int*)(sp+1));
 			break;
 
 		case SYS_READ:
-			f->eax=read(*(int*)(sp+1), *(void**) (sp+2),*(unsigned*)(sp+3))
+			f->eax=read(*(int*)(sp+1), *(void**) (sp+2),*(unsigned*)(sp+3));
 			break;
 
 		case SYS_WRITE:
-			f->eax=write(*(int*)(sp+1), *(void**) (sp+2),*(unsigned*)(sp+3))
+			f->eax=write(*(int*)(sp+1), *(void**) (sp+2),*(unsigned*)(sp+3));
 			break;
 
 		case SYS_SEEK:
-			f->eax=seek(*(int*)(sp+1),*(unsigned*)(sp+2))
+			seek(*(int*)(sp+1),*(unsigned*)(sp+2));
 			break;
 
 		case SYS_TELL:
-			f->eax=tell(*(int*)(sp+1))
+			f->eax=tell(*(int*)(sp+1));
 			break;
 
 		case SYS_CLOSE:
-			f->eax=close(*(int*)(sp+1))
+			close(*(int*)(sp+1));
 			break;
 	}
 	thread_exit ();
@@ -82,7 +84,36 @@ void halt() {
 }
 
 void exit(int status) {
+	// lock_acquire(&l);
 
+	// printf("%s: exit(%d)\n", thread_current()->name, status, thread_current()->tid);
+
+	// struct thread* cur = thread_current();
+	// struct child_info* ci = tid_find_child_info(cur->tid);
+	// struct thread* pt;
+
+	// ci->status = status;
+	// ci->terminated = true;
+	// ci->accessed = false;
+
+	// if(cur->children != 0) {
+	// 	tell_children_terminated(cur);
+	// 	if(cur->parent_terminated == false) {
+	// 		pt = cur->parent_thread;
+	// 		if(pt->waiting == true && pt->waiting_on_tid == cur->tid) {
+	// 			sema_up(&pt->block);
+	// 		}
+	// 	}
+	// }
+	// else if(cur->parent_terminated == false) {
+	// 	pt = cur->parent_thread;
+	// 	if(pt->waiting == true && pt->waiting_on_tid == cur->tid) {
+	// 		sema_up(&pt->block);
+	// 	}
+	// }
+
+	// lock_release(&l);
+	// thread_exit();
 }
 
 pid_t exec(const char* cmd_line) {
