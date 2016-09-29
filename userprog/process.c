@@ -227,6 +227,7 @@ load (const char *file_name, void (**eip) (void), void **esp)
 	strlcpy(fn_cpy, file_name, strlen(file_name) + 1);
 	char* file_name2 = strtok_r(fn_cpy, " ", &save_ptr);
 	file = filesys_open (file_name2);
+  free(fn_cpy);
 	if (file == NULL)
 	{
 	  printf ("load: %s: open failed\n", file_name);
