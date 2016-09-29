@@ -15,61 +15,103 @@ syscall_init (void)
 static void
 syscall_handler (struct intr_frame *f UNUSED) 
 {
-	void** esp = f->esp;
-	printf("\n%04x\n", esp);
+	int* sp = f->esp;
+	int syscall_num = *sp;
+	printf("%04x\t %d\n", sp, syscall_num);
 
 	printf ("system call!\n");
+
+	switch(syscall_num) {
+		case SYS_HALT:
+			break;
+
+		case SYS_EXIT:
+			break;
+
+		case SYS_EXEC:
+			break;
+
+		case SYS_WAIT:
+			break;
+
+		case SYS_CREATE:
+			break;
+
+		case SYS_REMOVE:
+			break;
+
+		case SYS_OPEN:
+			break;
+
+		case SYS_FILESIZE:
+			break;
+
+		case SYS_READ:
+			break;
+
+		case SYS_WRITE:
+			break;
+
+		case SYS_SEEK:
+			break;
+
+		case SYS_TELL:
+			break;
+
+		case SYS_CLOSE:
+			break;
+	}
 	thread_exit ();
 }
 
-//void halt() {
-//
-//}
-//
-//void exit(int status) {
-//
-//}
-//
-//pit_t exec(const char* cmd_line) {
-//
-//}
-//
-//int wait(pid_t pid) {
-//
-//}
-//
-//bool create(const char* file, unsigned initial_size) {
-//
-//}
-//
-//bool remove(const char* file) {
-//
-//}
-//
-//int open(const char* file) {
-//
-//}
-//
-//int filesize(int fd) {
-//
-//}
-//
-//int read(int fd, void* buffer, unsigned size) {
-//
-//}
-//
-//int write (int fd, const void *buffer, unsigned size) {
-//
-//}
-//
-//void seek (int fd, unsigned position) {
-//
-//}
-//
-//unsigned tell (int fd) {
-//
-//}
-//
-//void close (int fd) {
-//
-//}
+void halt() {
+
+}
+
+void exit(int status) {
+
+}
+
+pit_t exec(const char* cmd_line) {
+
+}
+
+int wait(pid_t pid) {
+
+}
+
+bool create(const char* file, unsigned initial_size) {
+
+}
+
+bool remove(const char* file) {
+
+}
+
+int open(const char* file) {
+
+}
+
+int filesize(int fd) {
+
+}
+
+int read(int fd, void* buffer, unsigned size) {
+
+}
+
+int write (int fd, const void *buffer, unsigned size) {
+
+}
+
+void seek (int fd, unsigned position) {
+
+}
+
+unsigned tell (int fd) {
+
+}
+
+void close (int fd) {
+
+}
