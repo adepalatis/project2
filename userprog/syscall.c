@@ -14,11 +14,24 @@ syscall_init (void)
   intr_register_int (0x30, 3, INTR_ON, syscall_handler, "syscall");
 }
 
+int chillPtr(void* ptr){
+	if (ptr==NULL || ptr > PHYS_BASE){
+		return 0;
+	}
+	if (pagedir_get_page(thread_current()->pagedir, ptr) == NULL){
+		return 0;
+	}
+	return 1;
+}
+
 static void
 syscall_handler (struct intr_frame *f UNUSED) 
 {
 	int* sp = f->esp;
 	int syscall_num = *sp;
+	if (!(chillPtr(sp)&&chillPtr(sp+1)&&chillPtr(sp+2)&&chillPtr(sp+3))) {
+		exit(-1);
+	}
 	printf("%04x\t %d\n", sp, syscall_num);
 
 	printf ("system call!\n");
