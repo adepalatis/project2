@@ -97,10 +97,6 @@ void halt() {
 }
 
 void exit(int status) {
-	struct thread* current = thread_current();
-	if (current->waitSema != NULL){
-		sema_up(current->waitSema);
-	}
 	process_exit();
 	// lock_acquire(&l);
 
