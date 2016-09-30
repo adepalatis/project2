@@ -90,8 +90,8 @@ int
 process_wait (tid_t child_tid UNUSED) 
 {
   struct thread* current = thread_current();
-  sema_down(&(in_child_processes(&(current->children),child_tid)->semaWait));
-  struct thread* dead = in_grave(pid)
+  sema_down(&(in_child_processes(&(current->children),child_tid)->waitSema));
+  struct thread* dead = in_grave(child_tid);
   return dead->exitCode;
 }
 
@@ -101,9 +101,10 @@ process_exit (void)
 {
   struct thread *cur = thread_current ();
   uint32_t *pd;
-  if (cur->waitSema != NULL){
-    sema_up(cur->waitSema);
+  if (cur->waitSema.value != NULL){
+    sema_up(&(cur->waitSema));
   }
+  graveDigger(cur);
   /* Destroy the current process's page directory and switch back
      to the kernel-only page directory. */
   pd = cur->pagedir;

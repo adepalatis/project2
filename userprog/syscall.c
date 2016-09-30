@@ -142,8 +142,9 @@ pid_t exec(const char* cmd_line) {
 
 	}
 	else{
-		struct thread* child = in_child_processes(pid);
-		sema_init(child->waitSema, 0);
+		struct thread* thisThread = thread_current();
+		struct thread* child = in_child_processes(&(thisThread->children), pid);
+		sema_init(&(child->waitSema), 0);
 		child->parent = thread_current()->tid;
 		struct list childList =thread_current()->children;
 		list_push_front(&childList, &(child->cochildren));
@@ -163,11 +164,12 @@ int wait(pid_t pid) {
 	if (in_child_processes(&(thisThread->children), pid)==NULL){
 		return -1;
 	}
+	struct thread* dead;
 	if (in_all_threads(pid)!=NULL){
 		int toReturn = process_wait(pid);
 		return toReturn;
 	}
-	else if (struct thread* dead = in_grave(pid) !=NULL) {
+	else if (dead = in_grave(pid) !=NULL) {
 		return dead->exitCode;
 	}
 	else{
