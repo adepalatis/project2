@@ -97,6 +97,11 @@ void halt() {
 }
 
 void exit(int status) {
+	struct thread* current = thread_current();
+	if (current->waitSema != NULL){
+		sema_up(current->waitSema);
+	}
+	process_exit();
 	// lock_acquire(&l);
 
 	// printf("%s: exit(%d)\n", thread_current()->name, status, thread_current()->tid);
@@ -142,6 +147,7 @@ pid_t exec(const char* cmd_line) {
 	}
 	else{
 		struct thread* child = in_child_processes(pid);
+		sema_init(child->waitSema, 0);
 		child->parent = thread_current()->tid;
 		struct list childList =thread_current()->children;
 		list_push_front(&childList, &(child->cochildren));
@@ -162,9 +168,8 @@ int wait(pid_t pid) {
 		return -1;
 	}
 	if (in_all_threads(pid)!=NULL){
-		process_wait(pid);
-		struct thread* dead = in_grave(pid)
-		return dead->exitCode;
+		int toReturn = process_wait(pid);
+		return toReturn;
 	}
 	else if (struct thread* dead = in_grave(pid) !=NULL) {
 		return dead->exitCode;

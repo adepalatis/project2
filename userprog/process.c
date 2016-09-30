@@ -89,10 +89,10 @@ start_process (void *file_name_)
 int
 process_wait (tid_t child_tid UNUSED) 
 {
-  while(1) {
-    
-  }
-  return -1;
+  struct thread* current = thread_current();
+  sema_down(&(in_child_processes(&(current->children),child_tid)->semaWait));
+  struct thread* dead = in_grave(pid)
+  return dead->exitCode;
 }
 
 /* Free the current process's resources. */
