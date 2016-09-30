@@ -130,22 +130,6 @@ void exit(int status) {
 }
 
 pid_t exec(const char* cmd_line) {
-	if(!chillPtr(cmd_line)) {
-		// deal with naughty pointers 
-		return -1;
-	}
-
-	pid_t pid = process_execute(cmd_line);
-
-	if(pid == TID_ERROR) {
-
-	}
-
-	sema_down(&thread_current()->order);
-
-	/* Make sure file loaded successfully */
-
-	return pid;
 
 }
 
