@@ -142,8 +142,9 @@ pid_t exec(const char* cmd_line) {
 	}
 	else{
 		struct thread* child = in_all_threads(pid);
+		child->parent = thread_current()->tid;
 		struct list childList =thread_current()->children;
-		list_push_front(&childList, &(child->allelem));
+		list_push_front(&childList, &(child->cochildren));
 	}
 
 	//sema_down(&thread_current()->order);

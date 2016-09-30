@@ -41,8 +41,6 @@ static struct thread *initial_thread;
 /* Lock used by allocate_tid(). */
 static struct lock tid_lock;
 
-static deadThread* deceasedThreads;
-
 /* Stack frame for kernel_thread(). */
 struct kernel_thread_frame 
   {
@@ -309,8 +307,6 @@ thread_exit (void)
   /* Remove thread from all threads list, set our status to dying,
      and schedule another process.  That process will destroy us
      when it calls thread_schedule_tail(). */
-  struct terminated_thread_info* curr_info;
-  curr_info = mark_terminated(curr_info, thread_current());
 
   intr_disable ();
   list_remove (&thread_current()->allelem);
@@ -319,12 +315,6 @@ thread_exit (void)
   NOT_REACHED ();
 }
 
-/* Combines the terminated thread's tid and exit status into a tuple */
-struct terminated_thread_info* mark_terminated(struct terminated_thread_info* info, struct thread* t) {
-  info->tid = t->tid;
-  
-  return info;
-}
 
 
 /* Yields the CPU.  The current thread is not put to sleep and
