@@ -140,8 +140,13 @@ pid_t exec(const char* cmd_line) {
 	if(pid == TID_ERROR) {
 
 	}
+	else{
+		struct thread* child = in_all_threads(pid);
+		struct list childList =thread_current()->children;
+		list_push_front(&childList, &(child->allelem));
+	}
 
-	sema_down(&thread_current()->order);
+	//sema_down(&thread_current()->order);
 
 	/* Make sure file loaded successfully */
 
