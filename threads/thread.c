@@ -30,7 +30,7 @@ static struct list all_list;
 
 /* List of all terminated processes. Processes' tids and
    exit statuses are added to this list as tuples when they terminate. */
-static struct list terminated_threads;
+static struct list graveyard;
 
 /* Idle thread. */
 static struct thread *idle_thread;
