@@ -93,7 +93,7 @@ syscall_handler (struct intr_frame *f UNUSED)
 }
 
 void halt() {
-
+	shutdown_power_off();
 }
 
 void exit(int status) {

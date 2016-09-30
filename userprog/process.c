@@ -465,41 +465,6 @@ setup_stack (const char* cmd, void **esp)
 			int MAX_ADDR = PHYS_BASE - PGSIZE;
 			*esp = PHYS_BASE;	// set pointer to base of stack
 
-      // /* Push arg values onto the stack */
-      // for(int k = argc - 1; k >= 0; k--) {
-      //   int arg_len = strlen(argv[k]) + 1;
-      //   (*(int*)esp) -= arg_len;  // move the stack pointer down by the size of the arg
-      //   if(*(int*)esp <= MAX_ADDR) {
-      //     // handle stack overflow
-      //   }
-      //   strlcpy(*(char**)esp, argv[k], arg_len); // push arg onto the stack
-      //   printf("%04x\t %s\n", *(int*)esp, *(char**)esp);
-      //   arg_addrs[k] = *(int*)esp;  // save a pointer to the arg's position on the stack
-      // }
-
-      // /* Word align, if necessary */
-      // while(*(int*)esp % 4 != 0) {
-      //   *(int*)esp -=1;
-      // }
-      // *(int*)esp -= 4;
-
-      // /* Push pointers to arg values' locations on the stack */
-      // for(int k = argc; k >= 0; k--) {
-      //   if(*(int*)esp <= MAX_ADDR) {
-      //     // handle stack overflow
-      //   }
-      //   *((int*)*esp) = arg_addrs[k];
-
-      //   // Debugging prints
-      //   if(*((int*)*esp) != 0) {
-      //     printf("%04x\t %04x\t %s\n", *(int*)esp, *((int*)*esp), *((int*)*esp));
-      //   } else {
-      //     printf("%04x\t %d\n", *(int*)esp, *((int*)*esp));
-      //   }
-
-      //   *(int*)esp -= 4;
-      // }
-
 			/* Push arg values to stack */
 			for(int k = argc - 1; k >= 0; k--) {
 				int arg_len = strlen(argv[k]) + 1;
