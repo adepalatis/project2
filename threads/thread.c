@@ -11,6 +11,7 @@
 #include "threads/switch.h"
 #include "threads/synch.h"
 #include "threads/vaddr.h"
+#include "lib/kernel/list.h"
 #ifdef USERPROG
 #include "userprog/process.h"
 #endif
@@ -620,6 +621,15 @@ allocate_tid (void)
 
   return tid;
 }
+
+void graveDigger(struct thread* cur){
+  struct list_elem* elem = &(cur->allelem);
+  list_remove(elem);
+  elem->prev = NULL;
+  elem->next = NULL;
+  list_push_back(&graveyard, elem);
+}
+
 
 /* Offset of `stack' member within `struct thread'.
    Used by switch.S, which can't figure it out on its own. */
