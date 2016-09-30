@@ -83,6 +83,7 @@ typedef int tid_t;
 struct thread;
 struct thread
   {
+    int exitCode;
     int childCount;
     struct list children;
     struct list_elem cochildren;

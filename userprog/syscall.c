@@ -141,7 +141,7 @@ pid_t exec(const char* cmd_line) {
 
 	}
 	else{
-		struct thread* child = in_all_threads(pid);
+		struct thread* child = in_child_processes(pid);
 		child->parent = thread_current()->tid;
 		struct list childList =thread_current()->children;
 		list_push_front(&childList, &(child->cochildren));
@@ -157,7 +157,21 @@ pid_t exec(const char* cmd_line) {
 }
 
 int wait(pid_t pid) {
-
+	struct thread* thisThread = thread_current();
+	if (in_child_processes(&(thisThread->children), pid)==NULL){
+		return -1;
+	}
+	if (in_all_threads(pid)!=NULL){
+		process_wait(pid);
+		struct thread* dead = in_grave(pid)
+		return dead->exitCode;
+	}
+	else if (struct thread* dead = in_grave(pid) !=NULL) {
+		return dead->exitCode;
+	}
+	else{
+		return -1;
+	}
 }
 
 bool create(const char* file, unsigned initial_size) {
