@@ -88,6 +88,17 @@ struct thread* in_all_threads(tid_t my_tid) {
    return NULL;
 }
 
+struct thread* in_child_processes(struct list* child_list, tid_t my_tid) {
+  for(struct list_elem* current = list_begin(child_list); current != list_end(child_list); current = list_next(current))
+   {
+    struct thread* result = list_entry(current, struct thread, cochildren);
+    if(result->tid == my_tid) {
+      return result;
+    }
+   }
+   return NULL;
+}
+
 /* Initializes the threading system by transforming the code
    that's currently running into a thread.  This can't work in
    general and it is possible in this case only because loader.S
