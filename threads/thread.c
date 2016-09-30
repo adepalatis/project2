@@ -28,6 +28,10 @@ static struct list ready_list;
    when they are first scheduled and removed when they exit. */
 static struct list all_list;
 
+/* List of all terminated processes. Processes' tids and
+   exit statuses are added to this list as tuples when they terminate. */
+static struct list terminated_threads;
+
 /* Idle thread. */
 static struct thread *idle_thread;
 
@@ -46,6 +50,8 @@ struct kernel_thread_frame
     thread_func *function;      /* Function to call. */
     void *aux;                  /* Auxiliary data for function. */
   };
+
+struct terminated_thread_info* mark_terminated(struct terminated_thread_info* info, struct thread* t);
 
 /* Statistics. */
 static long long idle_ticks;    /* # of timer ticks spent idle. */
@@ -72,6 +78,17 @@ static void *alloc_frame (struct thread *, size_t size);
 static void schedule (void);
 void thread_schedule_tail (struct thread *prev);
 static tid_t allocate_tid (void);
+
+struct thread* in_all_threads(tid_t my_tid) {
+  for(struct list_elem* current = list_begin(&all_list); current != list_end(&all_list); current = list_next(current))
+   {
+    struct thread* result = list_entry(current, struct thread, allelem);
+    if(result->tid == my_tid) {
+      return result;
+    }
+   }
+   return NULL;
+}
 
 /* Initializes the threading system by transforming the code
    that's currently running into a thread.  This can't work in
@@ -282,6 +299,7 @@ thread_tid (void)
 void
 thread_exit (void) 
 {
+  printf("thread_exit() called\n");
   ASSERT (!intr_context ());
 
 #ifdef USERPROG
@@ -291,12 +309,23 @@ thread_exit (void)
   /* Remove thread from all threads list, set our status to dying,
      and schedule another process.  That process will destroy us
      when it calls thread_schedule_tail(). */
+  struct terminated_thread_info* curr_info;
+  curr_info = mark_terminated(curr_info, thread_current());
+
   intr_disable ();
   list_remove (&thread_current()->allelem);
   thread_current ()->status = THREAD_DYING;
   schedule ();
   NOT_REACHED ();
 }
+
+/* Combines the terminated thread's tid and exit status into a tuple */
+struct terminated_thread_info* mark_terminated(struct terminated_thread_info* info, struct thread* t) {
+  info->tid = t->tid;
+  
+  return info;
+}
+
 
 /* Yields the CPU.  The current thread is not put to sleep and
    may be scheduled again immediately at the scheduler's whim. */

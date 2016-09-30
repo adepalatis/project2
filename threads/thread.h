@@ -95,6 +95,8 @@ struct thread
     int priority;                       /* Priority. */
     struct list_elem allelem;           /* List element for all threads list. */
 
+    // struct semaphore child_wait;
+
     /* Shared between thread.c and synch.c. */
     struct list_elem elem;              /* List element. */
 
@@ -107,13 +109,6 @@ struct thread
     unsigned magic;                     /* Detects stack overflow. */
   };
 
-typedef struct deadThread deadThread;
-
-struct deadThread{
-  tid_t tid;
-  int exitStatus;
-  deadThread* next;
-} ;
 
 /* If false (default), use round-robin scheduler.
    If true, use multi-level feedback queue scheduler.
@@ -150,5 +145,9 @@ int thread_get_nice (void);
 void thread_set_nice (int);
 int thread_get_recent_cpu (void);
 int thread_get_load_avg (void);
+
+
+struct thread* in_all_threads(tid_t my_tid);
+
 
 #endif /* threads/thread.h */
