@@ -131,6 +131,7 @@ void exit(int status) {
 }
 
 pid_t exec(const char* cmd_line) {
+	printf("EXECING NOW*********\n");
 	if(!chillPtr(cmd_line)) {
 		// deal with naughty pointers 
 		return -1;
