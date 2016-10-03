@@ -1,5 +1,6 @@
 #include "list.h"
 #include "../debug.h"
+#include "threads/thread.h"
 
 /* Our doubly linked lists have two header elements: the "head"
    just before the first element and the "tail" just after the
@@ -168,6 +169,8 @@ list_tail (struct list *list)
 void
 list_insert (struct list_elem *before, struct list_elem *elem)
 {
+  struct thread* check = list_entry(elem, struct thread, allelem);
+  printf("IN INSERT\n");
   ASSERT (is_interior (before) || is_tail (before));
   ASSERT (elem != NULL);
 
@@ -208,6 +211,7 @@ list_splice (struct list_elem *before,
 void
 list_push_front (struct list *list, struct list_elem *elem)
 {
+  printf("PUSHED FRONT\n");
   list_insert (list_begin (list), elem);
 }
 
@@ -216,6 +220,7 @@ list_push_front (struct list *list, struct list_elem *elem)
 void
 list_push_back (struct list *list, struct list_elem *elem)
 {
+  printf("PUSHED BACK\n");
   list_insert (list_end (list), elem);
 }
 
@@ -478,8 +483,9 @@ list_unique (struct list *list, struct list *duplicates,
     if (!less (elem, next, aux) && !less (next, elem, aux)) 
       {
         list_remove (next);
-        if (duplicates != NULL)
-          list_push_back (duplicates, next);
+        if (duplicates != NULL){
+          printf("UNIQUE PUSH BACK\n");
+          list_push_back (duplicates, next);}
       }
     else
       elem = next;

@@ -41,9 +41,8 @@ process_execute (const char *file_name)
 
 	/* Create a new thread to execute FILE_NAME. */
 	tid = thread_create (file_name, PRI_DEFAULT, start_process, fn_copy);
-	if (tid == TID_ERROR)
+  if (tid == TID_ERROR)
 	palloc_free_page (fn_copy);
-  
 	return tid;
 }
 
@@ -52,7 +51,7 @@ process_execute (const char *file_name)
 static void
 start_process (void *file_name_)
 {
-    
+    printf("IN START PROCESS\n");
 	  char *file_name = file_name_;
 	  struct intr_frame if_;
 	  bool success;
@@ -61,6 +60,7 @@ start_process (void *file_name_)
 	  if_.gs = if_.fs = if_.es = if_.ds = if_.ss = SEL_UDSEG;
 	  if_.cs = SEL_UCSEG;
 	  if_.eflags = FLAG_IF | FLAG_MBS;
+    printf("PRELOAD\n");
 	  success = load (file_name, &if_.eip, &if_.esp);
 	  /* If load failed, quit. */
 	  palloc_free_page (file_name);
@@ -73,6 +73,7 @@ start_process (void *file_name_)
 		 arguments on the stack in the form of a `struct intr_frame',
 		 we just point the stack pointer (%esp) to our stack frame
 		 and jump to it. */
+     printf("NEW THREAD ABOUT TO KICKOFF\n");
 	  asm volatile ("movl %0, %%esp; jmp intr_exit" : : "g" (&if_) : "memory");
     NOT_REACHED ();
 
@@ -91,7 +92,11 @@ int
 process_wait (tid_t child_tid UNUSED) 
 {
   struct thread* current = thread_current();
-  sema_down(&(in_child_processes(&(current->children),child_tid)->waitSema));
+  struct thread* child = in_all_threads(child_tid);
+  if (child==NULL){
+    return -1;
+  }
+  sema_down(&(child->waitSema));
   struct thread* dead = in_grave(child_tid);
   return dead->exitCode;
 }

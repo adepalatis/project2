@@ -97,6 +97,7 @@ void halt() {
 }
 
 void exit(int status) {
+	printf("EXITING\n");
 	process_exit();
 	// lock_acquire(&l);
 
@@ -147,8 +148,12 @@ pid_t exec(const char* cmd_line) {
 		struct thread* child = in_child_processes(&(thisThread->children), pid);
 		sema_init(&(child->waitSema), 0);
 		child->parent = thread_current()->tid;
-		struct list childList =thread_current()->children;
+		struct list childList;
+		list_init(&childList);
+		thread_current()->children = childList;
+		printf("PREFAIL\n");
 		list_push_front(&childList, &(child->cochildren));
+		printf("POSTFAIL\n");
 	}
 
 	//sema_down(&thread_current()->order);
