@@ -42,7 +42,10 @@ process_execute (const char *file_name)
 	/* Create a new thread to execute FILE_NAME. */
   struct thread* th = thread_current();
   sema_init(&th->load,0);
+  sema_init(&th->dead,0);
 	tid = thread_create (file_name, PRI_DEFAULT, start_process, fn_copy);
+  struct thread* cur = thread_current();
+  list_push_back(&cur->children, &in_all_threads(tid)->cochildren);
   sema_down(&th->load);
   printf("SEMA AFTER CREATE:%d\n", th->load.value);
   printf("SEMA WAIT\n");
@@ -109,13 +112,12 @@ process_wait (tid_t child_tid UNUSED)
   // printf("%s\n", child->exitCode);
   // struct thread* dead = in_grave(child_tid);
   // return dead->exitCode;
-
   struct thread* current = thread_current();
   struct list* children = get_children();
   struct thread* child;
 
   // Check if the given pid is a child of the current thread
-  if(!(child = in_child_processes(children, child_tid))) {
+  if((child = in_child_processes(children, child_tid))==NULL) {
     return -1;
   }
 
@@ -130,13 +132,16 @@ process_wait (tid_t child_tid UNUSED)
   }
 
   // Check if the child already terminated
-  if(!(child = in_grave(child_tid))) {
+  if((child = in_grave(child_tid))==NULL) {
     // Wait on the child
     sema_down(&current->waitSema);
   }
-
-  struct thread* dead_child = in_grave(child_tid);  // This should NEVER be null
-  return dead_child->exitCode;  
+  if (child==NULL){
+    printf("DEAD CHILD IS NULL\n");
+  }
+  int returnExit = child->exitCode;
+  sema_up(&current->dead);
+  return returnExit;  
 }
 
 /* Free the current process's resources. */

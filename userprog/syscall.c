@@ -102,7 +102,11 @@ void halt() {
 
 void exit(int status) {
 	printf("EXITING****************************\n");
+	struct thread* cur = thread_current();
+	cur->exitCode = status;
+	cur->called_exit = true;
 	thread_exit();
+	printf("PAST EXIT\n");
 	// lock_acquire(&l);
 
 	// printf("%s: exit(%d)\n", thread_current()->name, status, thread_current()->tid);
