@@ -2,6 +2,17 @@
 #define FILESYS_FILE_H
 
 #include "filesys/off_t.h"
+#include "lib/kernel/list.h"
+
+/* An open file. */
+struct file 
+  {
+    struct inode *inode;        /* File's inode. */
+    off_t pos;                  /* Current position. */
+    bool deny_write;            /* Has file_deny_write() been called? */
+    int fd;
+    struct list_elem file_elem;
+  };
 
 struct inode;
 
@@ -10,6 +21,7 @@ struct file *file_open (struct inode *);
 struct file *file_reopen (struct file *);
 void file_close (struct file *);
 struct inode *file_get_inode (struct file *);
+struct file* get_file(int fd);
 
 /* Reading and writing. */
 off_t file_read (struct file *, void *, off_t);

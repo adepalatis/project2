@@ -64,7 +64,6 @@ start_process (void *file_name_)
 	  if_.gs = if_.fs = if_.es = if_.ds = if_.ss = SEL_UDSEG;
 	  if_.cs = SEL_UCSEG;
 	  if_.eflags = FLAG_IF | FLAG_MBS;
-
 	  success = load (file_name, &if_.eip, &if_.esp);
     struct thread* test = thread_current();
     struct thread* th = test->parent;
@@ -100,27 +99,52 @@ start_process (void *file_name_)
 int
 process_wait (tid_t child_tid UNUSED) 
 {
-  printf("IN PWAIT\n");
+  // struct thread* current = thread_current();
+  // struct thread* child = in_all_threads(child_tid);
+  // if (child==NULL){
+  //   return -1;
+  // }
+  // sema_init(&(child->waitSema),0);
+  // sema_down(&(child->waitSema));
+  // printf("%s\n", child->exitCode);
+  // struct thread* dead = in_grave(child_tid);
+  // return dead->exitCode;
+
   struct thread* current = thread_current();
-  struct thread* child = in_all_threads(child_tid);
-  if (child==NULL){
+  struct list* children = get_children();
+  struct thread* child;
+
+  // Check if the given pid is a child of the current thread
+  if(!(child = in_child_processes(children, child_tid))) {
     return -1;
   }
-  printf("SEMA DOWN Started\n");
-  sema_down(&(child->waitSema));
-  printf("SEMA DOWN Ended\n");
-  printf("%s\n", child->exitCode);
-  struct thread* dead = in_grave(child_tid);
-  printf("NOT YET RETURNED\n");
-  return dead->exitCode;
+
+  // Check if the process associated with "child_tid" was waited on before
+  if(child->waited_on) {
+    return -1;
+  }
+
+  // Check if the child was terminated by the kernel
+  if(!child->called_exit) {
+    return -1;
+  }
+
+  // Check if the child already terminated
+  if(!(child = in_grave(child_tid))) {
+    // Wait on the child
+    sema_down(&current->waitSema);
+  }
+
+  struct thread* dead_child = in_grave(child_tid);  // This should NEVER be null
+  return dead_child->exitCode;  
 }
 
 /* Free the current process's resources. */
 void
 process_exit (void)
 {
-  printf("PROCESS EXIT YEAHHHH****\n");
-  
+  // printf("PROCESS EXIT YEAHHHH****\n");
+  struct thread *cur = thread_current ();
   uint32_t *pd;
   
   /* Destroy the current process's page directory and switch back
@@ -232,8 +256,7 @@ static bool load_segment (struct file *file, off_t ofs, uint8_t *upage,
    and its initial stack pointer into *ESP.
    Returns true if successful, false otherwise. */
 bool
-load (const char *file_name, void (**eip) (void), void **esp) 
-{
+load (const char *file_name, void (**eip) (void), void **esp) {
 	struct thread *t = thread_current ();
 
 	struct Elf32_Ehdr ehdr;

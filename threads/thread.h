@@ -100,6 +100,13 @@ struct thread
     int priority;                       /* Priority. */
     struct list_elem allelem;           /* List element for all threads list. */
 
+    bool called_exit;
+    bool waited_on;
+
+    struct list open_file_list;
+    struct list_elem cofiles;
+    int fd;
+
     // struct semaphore child_wait;
 
     /* Shared between thread.c and synch.c. */
@@ -151,6 +158,8 @@ void thread_set_nice (int);
 int thread_get_recent_cpu (void);
 int thread_get_load_avg (void);
 
+
+struct list* get_children();
 
 struct thread* in_all_threads(tid_t my_tid);
 struct thread* in_child_processes(struct list* child_list, tid_t my_tid);

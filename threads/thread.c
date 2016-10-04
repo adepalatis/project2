@@ -127,7 +127,6 @@ struct thread* in_grave(tid_t my_tid) {
 void
 thread_init (void) 
 {
-  printf("hi from thread_init\n");
   ASSERT (intr_get_level () == INTR_OFF);
 
   lock_init (&tid_lock);
@@ -143,6 +142,7 @@ thread_init (void)
   initial_thread->tid = allocate_tid ();
   sema_init(&initial_thread->waitSema,0);
   list_init (&thread_current()->children);
+  list_init (&thread_current()->open_file_list);;
 }
 
 /* Starts preemptive thread scheduling by enabling interrupts.
@@ -249,7 +249,7 @@ thread_create (const char *name, int priority,
   /* Add to run queue. */
 
   thread_unblock (t);
-  printf("PROCESS STARTED************\n");
+  // printf("PROCESS STARTED************\n");
   return tid;
 }
 
@@ -525,6 +525,9 @@ init_thread (struct thread *t, const char *name, int priority)
   t->priority = priority;
   t->magic = THREAD_MAGIC;
 
+  t->fd = 2;
+  list_init(&t->open_file_list);
+
   old_level = intr_disable ();
   list_push_back (&all_list, &t->allelem);
   intr_set_level (old_level);
@@ -640,6 +643,10 @@ allocate_tid (void)
   return tid;
 }
 
+struct list* get_children() {
+  return &thread_current()->children;
+}
+
 void graveDigger(struct thread* cur){
   struct list_elem* elem = &(cur->allelem);
   list_remove(elem);
@@ -647,6 +654,8 @@ void graveDigger(struct thread* cur){
   elem->next = NULL;
   list_push_back(&graveyard, elem);
 }
+
+
 
 
 /* Offset of `stack' member within `struct thread'.
