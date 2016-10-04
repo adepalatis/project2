@@ -330,6 +330,7 @@ thread_exit (void)
 {
   struct thread *cur = thread_current ();
   printf("thread_exit() called on %s\n", cur->name);
+  graveDigger(cur);
   ASSERT (!intr_context ());
 
 #ifdef USERPROG
@@ -350,7 +351,6 @@ thread_exit (void)
   printf("Thread EXIT FINISH_DUUUUUDEE*****\n");
   
   schedule ();
-  printf("Past sched\n");
   NOT_REACHED ();
 }
 
