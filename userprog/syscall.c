@@ -11,6 +11,7 @@
 struct lock l;
 
 static void syscall_handler (struct intr_frame *);
+int add_file(struct file* f);
 void close_and_remove_file(int fd);
 
 void
@@ -285,11 +286,18 @@ int write (int fd, const void *buffer, unsigned size) {
 }
 
 void seek (int fd, unsigned position) {
-
+	lock_acquire(&l);
+	struct file* f = get_file(fd);
+	file_seek(f, position);
+	lock_release(&l);
 }
 
 unsigned tell (int fd) {
-
+	lock_acquire(&l);
+	struct file* f = get_file(fd);
+	unsigned offset = file_tell(f);
+	lock_release(&l);
+	return offset;
 }
 
 void close (int fd) {
