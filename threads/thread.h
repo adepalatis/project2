@@ -90,6 +90,7 @@ struct thread
     struct list_elem cochildren;
     struct thread* parent;
     struct semaphore waitSema;
+    struct semaphore load;
     /* Owned by thread.c. */
     tid_t tid;                          /* Thread identifier. */
     enum thread_status status;          /* Thread state. */
