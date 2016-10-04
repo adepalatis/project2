@@ -127,7 +127,6 @@ struct thread* in_grave(tid_t my_tid) {
 void
 thread_init (void) 
 {
-  printf("hi from thread_init\n");
   ASSERT (intr_get_level () == INTR_OFF);
 
   lock_init (&tid_lock);
@@ -142,6 +141,7 @@ thread_init (void)
   initial_thread->status = THREAD_RUNNING;
   initial_thread->tid = allocate_tid ();
   list_init (&thread_current()->children);
+  list_init (&thread_current()->open_file_list);;
 }
 
 /* Starts preemptive thread scheduling by enabling interrupts.
@@ -242,7 +242,7 @@ thread_create (const char *name, int priority,
   sf->ebp = 0;
   /* Add to run queue. */
   thread_unblock (t);
-  printf("PROCESS STARTED************\n");
+  // printf("PROCESS STARTED************\n");
   return tid;
 }
 
@@ -322,7 +322,7 @@ thread_tid (void)
 void
 thread_exit (void) 
 {
-  printf("thread_exit() called\n");
+  // printf("thread_exit() called\n");
   ASSERT (!intr_context ());
 
 #ifdef USERPROG
@@ -510,6 +510,9 @@ init_thread (struct thread *t, const char *name, int priority)
   t->priority = priority;
   t->magic = THREAD_MAGIC;
 
+  t->fd = 2;
+  list_init(&t->open_file_list);
+
   old_level = intr_disable ();
   list_push_back (&all_list, &t->allelem);
   intr_set_level (old_level);
@@ -625,14 +628,20 @@ allocate_tid (void)
   return tid;
 }
 
+struct list* get_children() {
+  return &thread_current()->children;
+}
+
 void graveDigger(struct thread* cur){
   struct list_elem* elem = &(cur->allelem);
   list_remove(elem);
   elem->prev = NULL;
   elem->next = NULL;
-  printf("AT GRAVEYARD\n");
+  // printf("AT GRAVEYARD\n");
   list_push_back(&graveyard, elem);
 }
+
+
 
 
 /* Offset of `stack' member within `struct thread'.

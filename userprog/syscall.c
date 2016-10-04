@@ -5,13 +5,19 @@
 #include "threads/thread.h"
 #include "threads/vaddr.h"
 #include "threads/palloc.h"
+#include "filesys/file.h"
+#include "filesys/filesys.h"
+
+struct lock l;
 
 static void syscall_handler (struct intr_frame *);
+void close_and_remove_file(int fd);
 
 void
 syscall_init (void) 
 {
-  intr_register_int (0x30, 3, INTR_ON, syscall_handler, "syscall");
+	lock_init(&l);
+  	intr_register_int (0x30, 3, INTR_ON, syscall_handler, "syscall");
 }
 
 int chillPtr(void* ptr){
@@ -162,7 +168,6 @@ pid_t exec(const char* cmd_line) {
 
 	return pid;
 
-
 }
 
 int wait(pid_t pid) {
@@ -184,15 +189,55 @@ int wait(pid_t pid) {
 }
 
 bool create(const char* file, unsigned initial_size) {
+	lock_acquire(&l);
 
+	if(file == NULL || !chillPtr(file)) {
+		lock_release(&l);
+		exit(-1);
+	}
+
+	bool success = filesys_create(file, initial_size);
+
+	lock_release(&l);
+	return success;
 }
 
 bool remove(const char* file) {
+	lock_acquire(&l);
 
+	if(!chillPtr(file)) {
+		lock_release(&l);
+		exit(-1);
+	}
+
+	bool success = filesys_remove(file);
+
+	lock_release(&l);
+	return success;
 }
 
 int open(const char* file) {
+	lock_acquire(&l);
 
+	if(!chillPtr(file)) {
+		lock_release(&l);
+		exit(-1);
+	}	
+
+	struct file* f = filesys_open(file);
+
+	if(!strcmp(thread_current()->name, file)) {
+		file_deny_write(f);
+	}
+
+	else if(f == NULL) {
+		lock_release(&l);
+		return -1;	// ??? exit??
+	}
+
+	int fd = add_file(f);
+	lock_release(&l);
+	return fd;
 }
 
 int filesize(int fd) {
@@ -204,7 +249,35 @@ int read(int fd, void* buffer, unsigned size) {
 }
 
 int write (int fd, const void *buffer, unsigned size) {
+	lock_acquire(&l);
 
+	if(!chillPtr(buffer)) {
+		lock_release(&l);
+		exit(-1);
+	}
+
+	if(fd == 0) {
+		lock_release(&l);
+		return 0;
+	}
+	else if (fd == 1) {
+		putbuf(buffer, size);
+		lock_release(&l);
+		return size;
+	}
+	else {
+		struct file* f = get_file(fd);
+
+		if(f == NULL || f->deny_write) {
+			lock_release(&l);
+			return 0;
+		}
+
+		off_t bytes_written = file_write(f, buffer, size);
+
+		lock_release(&l);
+		return bytes_written;
+	}
 }
 
 void seek (int fd, unsigned position) {
@@ -216,5 +289,39 @@ unsigned tell (int fd) {
 }
 
 void close (int fd) {
+	sema_down(&(thread_current()->waitSema));
+	close_and_remove_file(fd);
+	sema_up(&(thread_current()->waitSema));
+}
 
+int add_file(struct file* f) {
+	// sema_down(&file_lock);
+	struct thread* current = thread_current();
+	struct list* open_file_list = &current->open_file_list;
+
+	f->fd = current->fd;
+	current->fd++;
+
+	list_push_back(open_file_list, &f->file_elem);
+
+	// sema_up(&file_lock);
+	return f->fd;
+}
+
+void close_and_remove_file(int fd) {
+	// sema_down(&file_lock);
+	struct list_elem* e;
+	struct thread* current = thread_current();
+	struct list* open_file_list = &current->open_file_list;
+
+	for(e = list_begin(open_file_list); e != list_end(open_file_list); e = list_next(e)) {
+		struct file* f = list_entry(e, struct file, file_elem);
+
+		if(f->fd == fd) {
+			list_remove(&f->file_elem);
+			file_close(f);
+			break;
+		}
+	}
+	// sema_up(&file_lock);
 }
