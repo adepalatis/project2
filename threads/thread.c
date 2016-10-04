@@ -140,8 +140,6 @@ thread_init (void)
   init_thread (initial_thread, "main", PRI_DEFAULT);
   initial_thread->status = THREAD_RUNNING;
   initial_thread->tid = allocate_tid ();
-  list_init (&thread_current()->children);
-  list_init (&thread_current()->open_file_list);;
 }
 
 /* Starts preemptive thread scheduling by enabling interrupts.
@@ -528,8 +526,8 @@ init_thread (struct thread *t, const char *name, int priority)
 
   t->fd = 2;
   list_init(&t->open_file_list);
-  list_init(&t->child_list);
-  
+  list_init(&t->children);
+
   sema_init(&t->waitSema,0);
   sema_init(&t->load,0);
   sema_init(&t->dead,0);

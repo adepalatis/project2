@@ -115,8 +115,6 @@ pid_t exec(const char* cmd_line) {
 		return -1;
 	}
 
-	// Check for loading error
-
 	pid_t pid = process_execute(cmd_line);
 
 	if(pid == TID_ERROR) {
@@ -208,11 +206,50 @@ int open(const char* file) {
 }
 
 int filesize(int fd) {
-
+	lock_acquire(&l);
+	struct file* f = get_file(fd);
+	lock_release(&l);
+	return file_length(f);
 }
 
 int read(int fd, void* buffer, unsigned size) {
+	lock_acquire(&l);
 
+	if(!chillPtr(buffer)) {
+		lock_release(&l);
+		exit(-1);
+	} else if(fd == 0) {
+		lock_release(&l);
+		return input_getc();
+	} else if(fd == 1) {
+		lock_release(&l);
+	} 
+
+	struct file* f = get_file(fd);
+
+	if(f == NULL) {
+		lock_release(&l);
+		return -1;
+	}
+
+	off_t bytes = file_length(f) - file_tell(f);
+
+	if(bytes < 0) {
+		lock_release(&l);
+		return 0;
+	} else if( size > (unsigned)bytes) {
+		size = bytes;
+	}
+
+	off_t bytes_read = file_read(f, buffer, size);
+
+	if((unsigned)bytes_read < size) {
+		lock_release(&l);
+		return -1;
+	}
+
+	lock_release(&l);
+	return bytes_read;
 }
 
 int write (int fd, const void *buffer, unsigned size) {
