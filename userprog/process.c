@@ -135,6 +135,7 @@ process_wait (tid_t child_tid UNUSED)
   if((child = in_grave(child_tid))==NULL) {
     // Wait on the child
     sema_down(&current->waitSema);
+    child->waited_on = true;
   }
   if (child==NULL){
     printf("DEAD CHILD IS NULL\n");
