@@ -133,6 +133,7 @@ process_wait (tid_t child_tid UNUSED)
   if(!(child = in_grave(child_tid))) {
     // Wait on the child
     sema_down(&current->waitSema);
+    child->waited_on = true;
   }
 
   struct thread* dead_child = in_grave(child_tid);  // This should NEVER be null
