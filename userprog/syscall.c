@@ -34,7 +34,6 @@ syscall_handler (struct intr_frame *f UNUSED)
 	}
 	printf("%04x\t %d\n", sp, syscall_num);
 
-
 	switch(syscall_num) {
 		case SYS_HALT:
 			halt();
@@ -88,7 +87,7 @@ syscall_handler (struct intr_frame *f UNUSED)
 			close(*(int*)(sp+1));
 			break;
 	}
-	thread_exit ();
+	
 }
 
 void halt() {
@@ -163,6 +162,7 @@ pid_t exec(const char* cmd_line) {
 }
 
 int wait(pid_t pid) {
+	printf("IN WAIT\n");
 	struct thread* thisThread = thread_current();
 	if (in_child_processes(&(thisThread->children), pid)==NULL){
 		return -1;

@@ -120,9 +120,9 @@ void
 process_exit (void)
 {
   printf("PROCESS EXIT YEAHHHH****\n");
-  struct thread *cur = thread_current ();
+  
   uint32_t *pd;
-  graveDigger(cur);
+  
   /* Destroy the current process's page directory and switch back
      to the kernel-only page directory. */
   pd = cur->pagedir;
