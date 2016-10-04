@@ -40,7 +40,12 @@ process_execute (const char *file_name)
 	strlcpy (fn_copy, file_name, PGSIZE);
 
 	/* Create a new thread to execute FILE_NAME. */
+  struct thread* th = thread_current();
+  sema_init(&th->load,0);
 	tid = thread_create (file_name, PRI_DEFAULT, start_process, fn_copy);
+  sema_down(&th->load);
+  printf("SEMA AFTER CREATE:%d\n", th->load.value);
+  printf("SEMA WAIT\n");
   if (tid == TID_ERROR)
 	palloc_free_page (fn_copy);
 	return tid;
@@ -51,7 +56,6 @@ process_execute (const char *file_name)
 static void
 start_process (void *file_name_)
 {
-    printf("IN START PROCESS\n");
 	  char *file_name = file_name_;
 	  struct intr_frame if_;
 	  bool success;
@@ -60,12 +64,18 @@ start_process (void *file_name_)
 	  if_.gs = if_.fs = if_.es = if_.ds = if_.ss = SEL_UDSEG;
 	  if_.cs = SEL_UCSEG;
 	  if_.eflags = FLAG_IF | FLAG_MBS;
-    printf("PRELOAD\n");
+
 	  success = load (file_name, &if_.eip, &if_.esp);
+    struct thread* test = thread_current();
+    struct thread* th = test->parent;
+    sema_up(&th->load);
 	  /* If load failed, quit. */
 	  palloc_free_page (file_name);
-	  if (!success)
-		thread_exit ();
+	  if (!success){
+      printf("NOT SUCCESS\n");
+  		thread_exit ();
+      
+    }
 
 	  /* Start the user process by simulating a return from an
 		 interrupt, implemented by intr_exit (in
@@ -73,7 +83,6 @@ start_process (void *file_name_)
 		 arguments on the stack in the form of a `struct intr_frame',
 		 we just point the stack pointer (%esp) to our stack frame
 		 and jump to it. */
-     printf("NEW THREAD ABOUT TO KICKOFF\n");
 	  asm volatile ("movl %0, %%esp; jmp intr_exit" : : "g" (&if_) : "memory");
     NOT_REACHED ();
 
@@ -91,15 +100,18 @@ start_process (void *file_name_)
 int
 process_wait (tid_t child_tid UNUSED) 
 {
+  printf("IN PWAIT\n");
   struct thread* current = thread_current();
   struct thread* child = in_all_threads(child_tid);
   if (child==NULL){
     return -1;
   }
-  sema_init(&(child->waitSema),0);
+  printf("SEMA DOWN Started\n");
   sema_down(&(child->waitSema));
+  printf("SEMA DOWN Ended\n");
   printf("%s\n", child->exitCode);
   struct thread* dead = in_grave(child_tid);
+  printf("NOT YET RETURNED\n");
   return dead->exitCode;
 }
 
@@ -110,9 +122,6 @@ process_exit (void)
   printf("PROCESS EXIT YEAHHHH****\n");
   struct thread *cur = thread_current ();
   uint32_t *pd;
-  if (cur->waitSema.value != NULL){
-    sema_up(&(cur->waitSema));
-  }
   graveDigger(cur);
   /* Destroy the current process's page directory and switch back
      to the kernel-only page directory. */
@@ -138,6 +147,7 @@ process_exit (void)
 void
 process_activate (void)
 {
+    // printf("Activate THREAD\n");
   struct thread *t = thread_current ();
 
   /* Activate thread's page tables. */
@@ -224,8 +234,8 @@ static bool load_segment (struct file *file, off_t ofs, uint8_t *upage,
 bool
 load (const char *file_name, void (**eip) (void), void **esp) 
 {
-  printf("LOADING\n");
 	struct thread *t = thread_current ();
+
 	struct Elf32_Ehdr ehdr;
 	struct file *file = NULL;
 	off_t file_ofs;

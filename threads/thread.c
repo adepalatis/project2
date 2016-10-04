@@ -141,6 +141,7 @@ thread_init (void)
   init_thread (initial_thread, "main", PRI_DEFAULT);
   initial_thread->status = THREAD_RUNNING;
   initial_thread->tid = allocate_tid ();
+  sema_init(&initial_thread->waitSema,0);
   list_init (&thread_current()->children);
 }
 
@@ -166,6 +167,7 @@ thread_start (void)
 void
 thread_tick (void) 
 {
+
   struct thread *t = thread_current ();
 
   /* Update statistics. */
@@ -210,6 +212,7 @@ tid_t
 thread_create (const char *name, int priority,
                thread_func *function, void *aux) 
 {
+  struct thread* th = thread_current();
   struct thread *t;
   struct kernel_thread_frame *kf;
   struct switch_entry_frame *ef;
@@ -224,8 +227,11 @@ thread_create (const char *name, int priority,
     return TID_ERROR;
 
   /* Initialize thread. */
+  
   init_thread (t, name, priority);
   tid = t->tid = allocate_tid ();
+  t->parent = th;
+
   /* Stack frame for kernel_thread(). */
   kf = alloc_frame (t, sizeof *kf);
   kf->eip = NULL;
@@ -241,6 +247,7 @@ thread_create (const char *name, int priority,
   sf->eip = switch_entry;
   sf->ebp = 0;
   /* Add to run queue. */
+
   thread_unblock (t);
   printf("PROCESS STARTED************\n");
   return tid;
@@ -276,7 +283,6 @@ thread_unblock (struct thread *t)
   enum intr_level old_level;
 
   ASSERT (is_thread (t));
-
   old_level = intr_disable ();
   ASSERT (t->status == THREAD_BLOCKED);
   list_push_back (&ready_list, &t->elem);
@@ -298,7 +304,7 @@ struct thread *
 thread_current (void) 
 {
   struct thread *t = running_thread ();
-  
+  // printf("%s\n", t->name);
   /* Make sure T is really a thread.
      If either of these assertions fire, then your thread may
      have overflowed its stack.  Each thread has less than 4 kB
@@ -322,7 +328,8 @@ thread_tid (void)
 void
 thread_exit (void) 
 {
-  printf("thread_exit() called\n");
+  struct thread *cur = thread_current ();
+  printf("thread_exit() called on %s\n", cur->name);
   ASSERT (!intr_context ());
 
 #ifdef USERPROG
@@ -332,11 +339,18 @@ thread_exit (void)
   /* Remove thread from all threads list, set our status to dying,
      and schedule another process.  That process will destroy us
      when it calls thread_schedule_tail(). */
+  
+  // printf("SEMA UP CALLED\n");
+  // sema_up(&(cur->waitSema));
 
   intr_disable ();
   list_remove (&thread_current()->allelem);
-  thread_current ()->status = THREAD_DYING;
+  printf("Thread EXIT FINISH\n");
+  running_thread()->status = THREAD_DYING;
+  printf("Thread EXIT FINISH_DUUUUUDEE*****\n");
+  
   schedule ();
+  printf("Past sched\n");
   NOT_REACHED ();
 }
 
@@ -482,7 +496,8 @@ running_thread (void)
      always at the beginning of a page and the stack pointer is
      somewhere in the middle, this locates the curent thread. */
   asm ("mov %%esp, %0" : "=g" (esp));
-  return pg_round_down (esp);
+  struct thread* temp = pg_round_down (esp);
+  return temp;
 }
 
 /* Returns true if T appears to point to a valid thread. */
@@ -630,7 +645,6 @@ void graveDigger(struct thread* cur){
   list_remove(elem);
   elem->prev = NULL;
   elem->next = NULL;
-  printf("AT GRAVEYARD\n");
   list_push_back(&graveyard, elem);
 }
 

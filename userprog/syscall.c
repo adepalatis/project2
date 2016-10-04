@@ -34,7 +34,6 @@ syscall_handler (struct intr_frame *f UNUSED)
 	}
 	printf("%04x\t %d\n", sp, syscall_num);
 
-	printf ("system call!\n");
 
 	switch(syscall_num) {
 		case SYS_HALT:
@@ -97,8 +96,8 @@ void halt() {
 }
 
 void exit(int status) {
-	printf("EXITING\n");
-	process_exit();
+	printf("EXITING****************************\n");
+	thread_exit();
 	// lock_acquire(&l);
 
 	// printf("%s: exit(%d)\n", thread_current()->name, status, thread_current()->tid);
@@ -147,13 +146,11 @@ pid_t exec(const char* cmd_line) {
 		struct thread* thisThread = thread_current();
 		struct thread* child = in_child_processes(&(thisThread->children), pid);
 		sema_init(&(child->waitSema), 0);
-		child->parent = thread_current()->tid;
+		child->parent = thread_current();
 		struct list childList;
 		list_init(&childList);
 		thread_current()->children = childList;
-		printf("PREFAIL\n");
 		list_push_front(&childList, &(child->cochildren));
-		printf("POSTFAIL\n");
 	}
 
 	//sema_down(&thread_current()->order);
