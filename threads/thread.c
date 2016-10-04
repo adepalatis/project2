@@ -140,7 +140,6 @@ thread_init (void)
   init_thread (initial_thread, "main", PRI_DEFAULT);
   initial_thread->status = THREAD_RUNNING;
   initial_thread->tid = allocate_tid ();
-  sema_init(&initial_thread->waitSema,0);
   list_init (&thread_current()->children);
   list_init (&thread_current()->open_file_list);;
 }
@@ -343,12 +342,8 @@ thread_exit (void)
   // sema_up(&(cur->waitSema));
 
   intr_disable ();
-  // list_remove (&thread_current()->allelem);
-  sema_up(&cur->parent->waitSema);
-  printf("SEMA UP WORKING\n");
-  sema_down(&cur->parent->dead);
-  printf("Thread EXIT FINISH\n");
 
+  // list_remove (&thread_current()->allelem);
   running_thread()->status = THREAD_DYING;
   printf("Thread EXIT FINISH_DUUUUUDEE*****\n");
   
@@ -529,7 +524,7 @@ init_thread (struct thread *t, const char *name, int priority)
 
   t->fd = 2;
   list_init(&t->open_file_list);
-
+  sema_init(&t->waitSema,0);
   old_level = intr_disable ();
   list_push_back (&all_list, &t->allelem);
   intr_set_level (old_level);

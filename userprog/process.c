@@ -48,7 +48,6 @@ process_execute (const char *file_name)
   list_push_back(&cur->children, &in_all_threads(tid)->cochildren);
   sema_down(&th->load);
   printf("SEMA AFTER CREATE:%d\n", th->load.value);
-  printf("SEMA WAIT\n");
   if (tid == TID_ERROR)
 	palloc_free_page (fn_copy);
 	return tid;
@@ -118,6 +117,7 @@ process_wait (tid_t child_tid UNUSED)
 
   // Check if the given pid is a child of the current thread
   if((child = in_child_processes(children, child_tid))==NULL) {
+    printf("CHILD IS NULL\n");
     return -1;
   }
 
@@ -134,14 +134,21 @@ process_wait (tid_t child_tid UNUSED)
   // Check if the child already terminated
   if((child = in_grave(child_tid))==NULL) {
     // Wait on the child
+    printf("SEMA DOWN CALLED IF\n");
     sema_down(&current->waitSema);
-    child->waited_on = true;
   }
+  else {
+    printf("SEMA DOWN CALLED ELSE: %d\n", current->waitSema.value);
+    sema_down(&current->waitSema);
+  }
+  
+  child->waited_on = true;
   if (child==NULL){
     printf("DEAD CHILD IS NULL\n");
   }
   int returnExit = child->exitCode;
   sema_up(&current->dead);
+  printf("DEAD SEMA UP SUCCESSFULLY******\n");
   return returnExit;  
 }
 
@@ -169,6 +176,10 @@ process_exit (void)
       pagedir_activate (NULL);
       pagedir_destroy (pd);
     }
+  printf("PRE-SEMA UP\n");
+  sema_up(&cur->parent->waitSema);
+  sema_down(&cur->parent->dead);
+  printf("past dead sema\n");
 }
 
 /* Sets up the CPU for running user code in the current
