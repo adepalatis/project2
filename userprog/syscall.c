@@ -101,38 +101,13 @@ void halt() {
 
 void exit(int status) {
 	printf("EXITING****************************\n");
+	struct thread* cur = thread_current();
+	cur->exitCode = status;
+	cur->called_exit = true;
 	thread_exit();
 }
 
 pid_t exec(const char* cmd_line) {
-	// printf("EXECING NOW*********\n");
-	// if(!chillPtr(cmd_line)) {
-	// 	// deal with naughty pointers 
-	// 	return -1;
-	// }
-
-	// pid_t pid = process_execute(cmd_line);
-
-	// if(pid == TID_ERROR) {
-
-	// }
-	// else{
-	// 	struct thread* thisThread = thread_current();
-	// 	struct thread* child = in_child_processes(&(thisThread->children), pid);
-	// 	sema_init(&(child->waitSema), 0);
-	// 	child->parent = thread_current();
-	// 	struct list childList;
-	// 	list_init(&childList);
-	// 	thread_current()->children = childList;
-	// 	list_push_front(&childList, &(child->cochildren));
-	// }
-
-	// //sema_down(&thread_current()->order);
-
-	// /* Make sure file loaded successfully */
-
-	// return pid;
-
 	lock_acquire(&l);
 
 	if(!chillPtr(cmd_line)) {

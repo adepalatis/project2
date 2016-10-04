@@ -332,11 +332,9 @@ thread_exit (void)
   printf("thread_exit() called on %s\n", cur->name);
   graveDigger(cur);
   ASSERT (!intr_context ());
-
 #ifdef USERPROG
   process_exit ();
 #endif
-
   /* Remove thread from all threads list, set our status to dying,
      and schedule another process.  That process will destroy us
      when it calls thread_schedule_tail(). */
@@ -345,8 +343,12 @@ thread_exit (void)
   // sema_up(&(cur->waitSema));
 
   intr_disable ();
-  list_remove (&thread_current()->allelem);
+  // list_remove (&thread_current()->allelem);
+  sema_up(&cur->parent->waitSema);
+  printf("SEMA UP WORKING\n");
+  sema_down(&cur->parent->dead);
   printf("Thread EXIT FINISH\n");
+
   running_thread()->status = THREAD_DYING;
   printf("Thread EXIT FINISH_DUUUUUDEE*****\n");
   
