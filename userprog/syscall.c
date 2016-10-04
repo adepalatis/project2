@@ -93,7 +93,6 @@ syscall_handler (struct intr_frame *f UNUSED)
 			close(*(int*)(sp+1));
 			break;
 	}
-	
 }
 
 void halt() {
@@ -103,67 +102,59 @@ void halt() {
 void exit(int status) {
 	printf("EXITING****************************\n");
 	thread_exit();
-	// lock_acquire(&l);
-
-	// printf("%s: exit(%d)\n", thread_current()->name, status, thread_current()->tid);
-
-	// struct thread* cur = thread_current();
-	// struct child_info* ci = tid_find_child_info(cur->tid);
-	// struct thread* pt;
-
-	// ci->status = status;
-	// ci->terminated = true;
-	// ci->accessed = false;
-
-	// if(cur->children != 0) {
-	// 	tell_children_terminated(cur);
-	// 	if(cur->parent_terminated == false) {
-	// 		pt = cur->parent_thread;
-	// 		if(pt->waiting == true && pt->waiting_on_tid == cur->tid) {
-	// 			sema_up(&pt->block);
-	// 		}
-	// 	}
-	// }
-	// else if(cur->parent_terminated == false) {
-	// 	pt = cur->parent_thread;
-	// 	if(pt->waiting == true && pt->waiting_on_tid == cur->tid) {
-	// 		sema_up(&pt->block);
-	// 	}
-	// }
-
-	// lock_release(&l);
-	// thread_exit();
 }
 
 pid_t exec(const char* cmd_line) {
-	printf("EXECING NOW*********\n");
+	// printf("EXECING NOW*********\n");
+	// if(!chillPtr(cmd_line)) {
+	// 	// deal with naughty pointers 
+	// 	return -1;
+	// }
+
+	// pid_t pid = process_execute(cmd_line);
+
+	// if(pid == TID_ERROR) {
+
+	// }
+	// else{
+	// 	struct thread* thisThread = thread_current();
+	// 	struct thread* child = in_child_processes(&(thisThread->children), pid);
+	// 	sema_init(&(child->waitSema), 0);
+	// 	child->parent = thread_current();
+	// 	struct list childList;
+	// 	list_init(&childList);
+	// 	thread_current()->children = childList;
+	// 	list_push_front(&childList, &(child->cochildren));
+	// }
+
+	// //sema_down(&thread_current()->order);
+
+	// /* Make sure file loaded successfully */
+
+	// return pid;
+
+	lock_acquire(&l);
+
 	if(!chillPtr(cmd_line)) {
-		// deal with naughty pointers 
+		// deal with naught pointers
 		return -1;
 	}
+
+	// Check for loading error
 
 	pid_t pid = process_execute(cmd_line);
 
 	if(pid == TID_ERROR) {
-
-	}
-	else{
-		struct thread* thisThread = thread_current();
-		struct thread* child = in_child_processes(&(thisThread->children), pid);
-		sema_init(&(child->waitSema), 0);
-		child->parent = thread_current();
-		struct list childList;
-		list_init(&childList);
-		thread_current()->children = childList;
-		list_push_front(&childList, &(child->cochildren));
+		lock_release(&l);
+		return pid;
 	}
 
-	//sema_down(&thread_current()->order);
+	sema_down(&thread_current()->waitSema);	// wait for child to finish execution
 
-	/* Make sure file loaded successfully */
+	// Check if current thread had loading error
 
+	lock_release(&l);
 	return pid;
-
 }
 
 int wait(pid_t pid) {
