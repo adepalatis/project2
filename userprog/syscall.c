@@ -11,6 +11,7 @@
 struct lock l;
 
 static void syscall_handler (struct intr_frame *);
+int add_file(struct file* f);
 void close_and_remove_file(int fd);
 
 void
@@ -93,7 +94,6 @@ syscall_handler (struct intr_frame *f UNUSED)
 			close(*(int*)(sp+1));
 			break;
 	}
-	
 }
 
 void halt() {
@@ -106,68 +106,33 @@ void exit(int status) {
 	cur->exitCode = status;
 	cur->called_exit = true;
 	thread_exit();
-	printf("PAST EXIT\n");
-	// lock_acquire(&l);
-
-	// printf("%s: exit(%d)\n", thread_current()->name, status, thread_current()->tid);
-
-	// struct thread* cur = thread_current();
-	// struct child_info* ci = tid_find_child_info(cur->tid);
-	// struct thread* pt;
-
-	// ci->status = status;
-	// ci->terminated = true;
-	// ci->accessed = false;
-
-	// if(cur->children != 0) {
-	// 	tell_children_terminated(cur);
-	// 	if(cur->parent_terminated == false) {
-	// 		pt = cur->parent_thread;
-	// 		if(pt->waiting == true && pt->waiting_on_tid == cur->tid) {
-	// 			sema_up(&pt->block);
-	// 		}
-	// 	}
-	// }
-	// else if(cur->parent_terminated == false) {
-	// 	pt = cur->parent_thread;
-	// 	if(pt->waiting == true && pt->waiting_on_tid == cur->tid) {
-	// 		sema_up(&pt->block);
-	// 	}
-	// }
-
-	// lock_release(&l);
-	// thread_exit();
 }
 
 pid_t exec(const char* cmd_line) {
-	printf("EXECING NOW*********\n");
+	lock_acquire(&l);
+
 	if(!chillPtr(cmd_line)) {
-		// deal with naughty pointers 
+		lock_release(&l);
 		return -1;
 	}
 
 	pid_t pid = process_execute(cmd_line);
 
 	if(pid == TID_ERROR) {
-
-	}
-	else{
-		struct thread* thisThread = thread_current();
-		struct thread* child = in_child_processes(&(thisThread->children), pid);
-		sema_init(&(child->waitSema), 0);
-		child->parent = thread_current();
-		struct list childList;
-		list_init(&childList);
-		thread_current()->children = childList;
-		list_push_front(&childList, &(child->cochildren));
+		lock_release(&l);
+		return pid;
 	}
 
-	//sema_down(&thread_current()->order);
+	process_wait(pid);
 
-	/* Make sure file loaded successfully */
+	// Check if current thread had loading error
+	if(!thread_current()->load_success) {
+		lock_release(&l);
+		return -1;
+	}
 
+	lock_release(&l);
 	return pid;
-
 }
 
 int wait(pid_t pid) {
@@ -242,11 +207,50 @@ int open(const char* file) {
 }
 
 int filesize(int fd) {
-
+	lock_acquire(&l);
+	struct file* f = get_file(fd);
+	lock_release(&l);
+	return file_length(f);
 }
 
 int read(int fd, void* buffer, unsigned size) {
+	lock_acquire(&l);
 
+	if(!chillPtr(buffer)) {
+		lock_release(&l);
+		exit(-1);
+	} else if(fd == 0) {
+		lock_release(&l);
+		return input_getc();
+	} else if(fd == 1) {
+		lock_release(&l);
+	} 
+
+	struct file* f = get_file(fd);
+
+	if(f == NULL) {
+		lock_release(&l);
+		return -1;
+	}
+
+	off_t bytes = file_length(f) - file_tell(f);
+
+	if(bytes < 0) {
+		lock_release(&l);
+		return 0;
+	} else if( size > (unsigned)bytes) {
+		size = bytes;
+	}
+
+	off_t bytes_read = file_read(f, buffer, size);
+
+	if((unsigned)bytes_read < size) {
+		lock_release(&l);
+		return -1;
+	}
+
+	lock_release(&l);
+	return bytes_read;
 }
 
 int write (int fd, const void *buffer, unsigned size) {
@@ -282,11 +286,18 @@ int write (int fd, const void *buffer, unsigned size) {
 }
 
 void seek (int fd, unsigned position) {
-
+	lock_acquire(&l);
+	struct file* f = get_file(fd);
+	file_seek(f, position);
+	lock_release(&l);
 }
 
 unsigned tell (int fd) {
-
+	lock_acquire(&l);
+	struct file* f = get_file(fd);
+	unsigned offset = file_tell(f);
+	lock_release(&l);
+	return offset;
 }
 
 void close (int fd) {

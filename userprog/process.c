@@ -47,9 +47,11 @@ process_execute (const char *file_name)
   struct thread* cur = thread_current();
   list_push_back(&cur->children, &in_all_threads(tid)->cochildren);
   sema_down(&th->load);
-  printf("SEMA AFTER CREATE:%d\n", th->load.value);
   if (tid == TID_ERROR)
 	palloc_free_page (fn_copy);
+  if (tid == TID_ERROR) {
+	 palloc_free_page (fn_copy);
+  }
 	return tid;
 }
 
@@ -67,6 +69,9 @@ start_process (void *file_name_)
 	  if_.cs = SEL_UCSEG;
 	  if_.eflags = FLAG_IF | FLAG_MBS;
 	  success = load (file_name, &if_.eip, &if_.esp);
+    
+    thread_current()->parent->load_success = success;
+
     struct thread* test = thread_current();
     struct thread* th = test->parent;
     sema_up(&th->load);
