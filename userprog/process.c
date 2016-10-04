@@ -96,7 +96,9 @@ process_wait (tid_t child_tid UNUSED)
   if (child==NULL){
     return -1;
   }
+  sema_init(&(child->waitSema),0);
   sema_down(&(child->waitSema));
+  printf("%s\n", child->exitCode);
   struct thread* dead = in_grave(child_tid);
   return dead->exitCode;
 }

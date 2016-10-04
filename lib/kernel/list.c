@@ -170,7 +170,6 @@ void
 list_insert (struct list_elem *before, struct list_elem *elem)
 {
   struct thread* check = list_entry(elem, struct thread, allelem);
-  printf("IN INSERT\n");
   ASSERT (is_interior (before) || is_tail (before));
   ASSERT (elem != NULL);
 
@@ -211,7 +210,6 @@ list_splice (struct list_elem *before,
 void
 list_push_front (struct list *list, struct list_elem *elem)
 {
-  printf("PUSHED FRONT\n");
   list_insert (list_begin (list), elem);
 }
 
@@ -220,7 +218,6 @@ list_push_front (struct list *list, struct list_elem *elem)
 void
 list_push_back (struct list *list, struct list_elem *elem)
 {
-  printf("PUSHED BACK\n");
   list_insert (list_end (list), elem);
 }
 
