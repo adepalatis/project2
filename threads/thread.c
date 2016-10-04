@@ -652,10 +652,6 @@ void graveDigger(struct thread* cur){
   list_remove(elem);
   elem->prev = NULL;
   elem->next = NULL;
-<<<<<<< HEAD
-  // printf("AT GRAVEYARD\n");
-=======
->>>>>>> 3ca315c8e45cee1bcad3f7e11247c92a9f3c1154
   list_push_back(&graveyard, elem);
 }
 
