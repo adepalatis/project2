@@ -111,7 +111,7 @@ pid_t exec(const char* cmd_line) {
 	lock_acquire(&l);
 
 	if(!chillPtr(cmd_line)) {
-		// deal with naught pointers
+		lock_release(&l);
 		return -1;
 	}
 
@@ -124,9 +124,13 @@ pid_t exec(const char* cmd_line) {
 		return pid;
 	}
 
-	sema_down(&thread_current()->waitSema);	// wait for child to finish execution
+	process_wait(pid);
 
 	// Check if current thread had loading error
+	if(!thread_current()->load_success) {
+		lock_release(&l);
+		return -1;
+	}
 
 	lock_release(&l);
 	return pid;

@@ -102,6 +102,7 @@ struct thread
 
     bool called_exit;
     bool waited_on;
+    bool load_success;
 
     struct list open_file_list;
     struct list_elem cofiles;
