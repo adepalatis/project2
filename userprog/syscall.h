@@ -32,4 +32,6 @@ unsigned tell (int fd);
 
 void close (int fd);
 
+int chillPtr(void* ptr);
+
 #endif /* userprog/syscall.h */

@@ -19,11 +19,12 @@ void
 syscall_init (void) 
 {
 	lock_init(&l);
+	sema_init(&file_sema, 1);
   	intr_register_int (0x30, 3, INTR_ON, syscall_handler, "syscall");
 }
 
 int chillPtr(void* ptr){
-	if (ptr==NULL || ptr > PHYS_BASE){
+	if (ptr==NULL || ptr >= PHYS_BASE){
 		return 0;
 	}
 	if (pagedir_get_page(thread_current()->pagedir, ptr) == NULL){
