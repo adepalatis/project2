@@ -63,6 +63,7 @@ static void
 start_process (void *file_name_)
 {
 	  char *file_name = file_name_;
+
 	  struct intr_frame if_;
 	  bool success;
 	  /* Initialize interrupt frame and load executable. */
@@ -535,12 +536,12 @@ setup_stack (const char* cmd, void **esp)
 			for(int k = argc - 1; k >= 0; k--) {
 				int arg_len = strlen(argv[k]) + 1;
 				(*(int*)esp) -= arg_len;
-				// printf("%04x\t %s\n", *(int*)esp, argv[k]);
 				if(*(int*)esp <= MAX_ADDR) {
 					// handle stack overflow
 				}
-				strlcpy(*(char**)esp, argv[k], arg_len);	// push the argument onto the stack
-				arg_addrs[k] = (char*)*esp;	// save a pointer to the argument's position on the stack
+			 	char* thing = strlcpy(*(char**)esp, argv[k], arg_len);	// push the argument onto the stack
+				// printf("%s\n", thing);
+        arg_addrs[k] = (char*)*esp;	// save a pointer to the argument's position on the stack
 			}
 
 			/* Word allign if necessary */
@@ -556,25 +557,14 @@ setup_stack (const char* cmd, void **esp)
 				} else {
 					*((int*)*esp) = arg_addrs[k];
 				}
-        // Debugging prints 
-        if(arg_addrs[k] != 0) {
-          // printf("%04x\t %04x\t %s\n", *(int*)esp, *((int*)*esp) /*arg_addrs[k]*/, (char*)*((int*)*esp) /*(char*)arg_addrs[k]*/);
-        } else {
-          // printf("%04x\t %d\t\n", *(int*)esp, *((int*)*esp) /*arg_addrs[k]*/);
-        }
-
 				*(int*)esp -= 4;
 			}
 
-			/* Push argv (i.e., &argv[0]) to stack */
+			/* Push argv to stack */
       if(*(int*)esp <= MAX_ADDR) {
         // handle stack overflow
       } else {
         *((int*)*esp) = *(int*)esp + 4;
-
-        // Debugging print
-        // printf("%04x\t %04x\n", *(int*)esp, *((int*)*esp));
-        
         *(int*)esp -= 4;  
       }
 
@@ -584,9 +574,6 @@ setup_stack (const char* cmd, void **esp)
       } else {
         *((int*)*esp) = argc;
         *(int*)esp -= 4;
-
-        // Debugging print
-        // printf("%04x\t %d\n", *(int*)esp, *((int*)*esp));
       }
       if(*(int*)esp <= MAX_ADDR) {
         // handle stack overflow
