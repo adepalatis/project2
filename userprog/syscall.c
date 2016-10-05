@@ -24,7 +24,7 @@ syscall_init (void)
 
 int chillPtr(void* ptr){
 	// printf("PHYSBASE: %04x\nOTHER PTR: %04x\n", PHYS_BASE, ptr);
-	if (ptr==NULL || ptr > PHYS_BASE){
+	if (ptr==NULL || ptr >= PHYS_BASE){
 		return 0;
 	}
 	if (pagedir_get_page(thread_current()->pagedir, ptr) == NULL){
@@ -46,7 +46,6 @@ syscall_handler (struct intr_frame *f UNUSED)
 	}
 
 	// printf("%04x\t %d\n", sp, syscall_num);
-
 	switch(syscall_num) {
 		case SYS_HALT:
 			halt();
