@@ -45,6 +45,8 @@ process_execute (const char *file_name)
   sema_init(&th->dead,0);
 	tid = thread_create (file_name, PRI_DEFAULT, start_process, fn_copy);
   struct thread* cur = thread_current();
+  struct thread* child = in_all_threads(tid);
+  child->parent = cur;
   list_push_back(&cur->children, &in_all_threads(tid)->cochildren);
   sema_down(&th->load);
   if (tid == TID_ERROR)
@@ -119,6 +121,7 @@ process_wait (tid_t child_tid UNUSED)
   struct thread* current = thread_current();
   struct list* children = get_children();
   struct thread* child;
+  struct thread* otherchild;
 
   // Check if the given pid is a child of the current thread
   if((child = in_child_processes(children, child_tid))==NULL) {
@@ -137,14 +140,14 @@ process_wait (tid_t child_tid UNUSED)
   }
 
   // Check if the child already terminated
-  if((child = in_grave(child_tid))==NULL) {
+  if((otherchild = in_grave(child_tid))==NULL) {
     // Wait on the child
     printf("SEMA DOWN CALLED IF\n");
-    sema_down(&current->waitSema);
+    sema_down(&child->waitSema);
   }
   else {
-    printf("SEMA DOWN CALLED ELSE: %d\n", current->waitSema.value);
-    sema_down(&current->waitSema);
+    printf("SEMA DOWN CALLED ELSE: %d\n", child->waitSema.value);
+    sema_down(&child->waitSema);
   }
   
   child->waited_on = true;
@@ -152,7 +155,7 @@ process_wait (tid_t child_tid UNUSED)
     printf("DEAD CHILD IS NULL\n");
   }
   int returnExit = child->exitCode;
-  sema_up(&current->dead);
+  sema_up(&child->dead);
   printf("DEAD SEMA UP SUCCESSFULLY******\n");
   return returnExit;  
 }
@@ -167,6 +170,10 @@ process_exit (void)
   
   /* Destroy the current process's page directory and switch back
      to the kernel-only page directory. */
+  sema_up(&cur->waitSema);
+  if (cur->parent!=NULL){
+    sema_down(&cur->dead);
+  }
   pd = cur->pagedir;
   if (pd != NULL) 
     {
@@ -181,10 +188,7 @@ process_exit (void)
       pagedir_activate (NULL);
       pagedir_destroy (pd);
     }
-  printf("PRE-SEMA UP\n");
-  sema_up(&cur->parent->waitSema);
-  sema_down(&cur->parent->dead);
-  printf("past dead sema\n");
+  
 }
 
 /* Sets up the CPU for running user code in the current

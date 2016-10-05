@@ -227,7 +227,6 @@ thread_create (const char *name, int priority,
   
   init_thread (t, name, priority);
   tid = t->tid = allocate_tid ();
-  t->parent = th;
 
   /* Stack frame for kernel_thread(). */
   kf = alloc_frame (t, sizeof *kf);
@@ -338,12 +337,12 @@ thread_exit (void)
   
   // printf("SEMA UP CALLED\n");
   // sema_up(&(cur->waitSema));
-
+    printf("PAST PEXIT in %s\n", cur->name);
   intr_disable ();
 
   // list_remove (&thread_current()->allelem);
-  running_thread()->status = THREAD_DYING;
-  printf("Thread EXIT FINISH_DUUUUUDEE*****\n");
+  thread_current()->status = THREAD_DYING;
+  // printf("Thread EXIT FINISH_DUUUUUDEE*****\n");
   
   schedule ();
   NOT_REACHED ();
