@@ -9,7 +9,7 @@
 #include "filesys/filesys.h"
 
 static struct lock l;
-static semaphore file_sema;
+static struct semaphore file_sema;
 
 static void syscall_handler (struct intr_frame *);
 int add_file(struct file* f);
