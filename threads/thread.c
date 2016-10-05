@@ -516,12 +516,16 @@ init_thread (struct thread *t, const char *name, int priority)
     if (name[length]!=' '){
       length++;
     }
+    else if(length==strlen(name)){
+      length = 0;
+      done = 0;
+    }
     else{done = 0;}
   }
   strlcpy (t->name, name, sizeof t->name);
 
   if (length!=0){
-    t->name[length+1]=NULL;
+    t->name[length]=NULL;
   }
   t->stack = (uint8_t *) t + PGSIZE;
   t->priority = priority;
