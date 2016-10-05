@@ -8,7 +8,8 @@
 #include "filesys/file.h"
 #include "filesys/filesys.h"
 
-struct lock l;
+static struct lock l;
+static struct semaphore file_sema;
 
 static void syscall_handler (struct intr_frame *);
 int add_file(struct file* f);
@@ -301,13 +302,13 @@ unsigned tell (int fd) {
 }
 
 void close (int fd) {
-	sema_down(&(thread_current()->waitSema));
+	lock_acquire(&l);
 	close_and_remove_file(fd);
-	sema_up(&(thread_current()->waitSema));
+	lock_release(&l);
 }
 
 int add_file(struct file* f) {
-	// sema_down(&file_lock);
+	sema_down(&file_sema);
 	struct thread* current = thread_current();
 	struct list* open_file_list = &current->open_file_list;
 
@@ -316,12 +317,12 @@ int add_file(struct file* f) {
 
 	list_push_back(open_file_list, &f->file_elem);
 
-	// sema_up(&file_lock);
+	sema_up(&file_sema);
 	return f->fd;
 }
 
 void close_and_remove_file(int fd) {
-	// sema_down(&file_lock);
+	sema_down(&file_sema);
 	struct list_elem* e;
 	struct thread* current = thread_current();
 	struct list* open_file_list = &current->open_file_list;
@@ -335,5 +336,5 @@ void close_and_remove_file(int fd) {
 			break;
 		}
 	}
-	// sema_up(&file_lock);
+	sema_up(&file_sema);
 }
