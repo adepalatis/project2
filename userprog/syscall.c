@@ -24,7 +24,7 @@ syscall_init (void)
 }
 
 int chillPtr(void* ptr){
-	if (ptr==NULL || ptr > PHYS_BASE){
+	if (ptr==NULL || ptr >= PHYS_BASE){
 		return 0;
 	}
 	if (pagedir_get_page(thread_current()->pagedir, ptr) == NULL){
