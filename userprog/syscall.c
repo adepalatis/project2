@@ -49,7 +49,6 @@ syscall_handler (struct intr_frame *f UNUSED)
 	}
 
 	// printf("%04x\t %d\n", sp, syscall_num);
-
 	switch(syscall_num) {
 		case SYS_HALT:
 			halt();
