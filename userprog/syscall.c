@@ -30,6 +30,9 @@ int chillPtr(void* ptr){
 	if (pagedir_get_page(thread_current()->pagedir, ptr) == NULL){
 		return 0;
 	}
+	if(is_kernel_vaddr(ptr)) {
+		return 0;
+	}
 	return 1;
 }
 
