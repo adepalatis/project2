@@ -80,7 +80,7 @@ start_process (void *file_name_)
 	  /* If load failed, quit. */
 	  palloc_free_page (file_name);
 	  if (!success){
-      printf("NOT SUCCESS\n");
+      // printf("NOT SUCCESS\n");
   		thread_exit ();
       
     }
@@ -125,7 +125,7 @@ process_wait (tid_t child_tid UNUSED)
 
   // Check if the given pid is a child of the current thread
   if((child = in_child_processes(children, child_tid))==NULL) {
-    printf("CHILD IS NULL\n");
+    // printf("CHILD IS NULL\n");
     return -1;
   }
 
@@ -142,21 +142,21 @@ process_wait (tid_t child_tid UNUSED)
   // Check if the child already terminated
   if((otherchild = in_grave(child_tid))==NULL) {
     // Wait on the child
-    printf("SEMA DOWN CALLED IF\n");
+    // printf("SEMA DOWN CALLED IF\n");
     sema_down(&child->waitSema);
   }
   else {
-    printf("SEMA DOWN CALLED ELSE: %d\n", child->waitSema.value);
+    // printf("SEMA DOWN CALLED ELSE: %d\n", child->waitSema.value);
     sema_down(&child->waitSema);
   }
   
   child->waited_on = true;
   if (child==NULL){
-    printf("DEAD CHILD IS NULL\n");
+    // printf("DEAD CHILD IS NULL\n");
   }
   int returnExit = child->exitCode;
   sema_up(&child->dead);
-  printf("DEAD SEMA UP SUCCESSFULLY******\n");
+  // printf("DEAD SEMA UP SUCCESSFULLY******\n");
   return returnExit;  
 }
 
@@ -535,7 +535,7 @@ setup_stack (const char* cmd, void **esp)
 			for(int k = argc - 1; k >= 0; k--) {
 				int arg_len = strlen(argv[k]) + 1;
 				(*(int*)esp) -= arg_len;
-				printf("%04x\t %s\n", *(int*)esp, argv[k]);
+				// printf("%04x\t %s\n", *(int*)esp, argv[k]);
 				if(*(int*)esp <= MAX_ADDR) {
 					// handle stack overflow
 				}
@@ -558,9 +558,9 @@ setup_stack (const char* cmd, void **esp)
 				}
         // Debugging prints 
         if(arg_addrs[k] != 0) {
-          printf("%04x\t %04x\t %s\n", *(int*)esp, *((int*)*esp) /*arg_addrs[k]*/, (char*)*((int*)*esp) /*(char*)arg_addrs[k]*/);
+          // printf("%04x\t %04x\t %s\n", *(int*)esp, *((int*)*esp) /*arg_addrs[k]*/, (char*)*((int*)*esp) /*(char*)arg_addrs[k]*/);
         } else {
-          printf("%04x\t %d\t\n", *(int*)esp, *((int*)*esp) /*arg_addrs[k]*/);
+          // printf("%04x\t %d\t\n", *(int*)esp, *((int*)*esp) /*arg_addrs[k]*/);
         }
 
 				*(int*)esp -= 4;
@@ -573,7 +573,7 @@ setup_stack (const char* cmd, void **esp)
         *((int*)*esp) = *(int*)esp + 4;
 
         // Debugging print
-        printf("%04x\t %04x\n", *(int*)esp, *((int*)*esp));
+        // printf("%04x\t %04x\n", *(int*)esp, *((int*)*esp));
         
         *(int*)esp -= 4;  
       }
@@ -583,9 +583,15 @@ setup_stack (const char* cmd, void **esp)
         // handle stack overflow
       } else {
         *((int*)*esp) = argc;
+        *(int*)esp -= 4;
 
         // Debugging print
-        printf("%04x\t %d\n", *(int*)esp, *((int*)*esp));
+        // printf("%04x\t %d\n", *(int*)esp, *((int*)*esp));
+      }
+      if(*(int*)esp <= MAX_ADDR) {
+        // handle stack overflow
+      } else {
+        *((int*)*esp) = 0;
       }
 		}
 		else {

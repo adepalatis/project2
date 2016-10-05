@@ -40,7 +40,7 @@ syscall_handler (struct intr_frame *f UNUSED)
 	if (!(chillPtr(sp)&&chillPtr(sp+1)&&chillPtr(sp+2)&&chillPtr(sp+3))) {
 		exit(-1);
 	}
-	printf("%04x\t %d\n", sp, syscall_num);
+	// printf("%04x\t %d\n", sp, syscall_num);
 
 	switch(syscall_num) {
 		case SYS_HALT:
@@ -102,8 +102,9 @@ void halt() {
 }
 
 void exit(int status) {
-	printf("EXITING****************************\n");
+	 
 	struct thread* cur = thread_current();
+	printf("%s: exit(%d)\n", cur->name, status);
 	cur->exitCode = status;
 	cur->called_exit = true;
 	thread_exit();
@@ -137,7 +138,7 @@ pid_t exec(const char* cmd_line) {
 }
 
 int wait(pid_t pid) {
-	printf("IN WAIT\n");
+	// printf("IN WAIT\n");
 	struct thread* thisThread = thread_current();
 	if (in_child_processes(&(thisThread->children), pid)==NULL){
 		return -1;

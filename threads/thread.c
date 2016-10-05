@@ -93,7 +93,6 @@ struct thread* in_child_processes(struct list* child_list, tid_t my_tid) {
   for(struct list_elem* current = list_begin(child_list); current != list_end(child_list); current = list_next(current))
    {
     struct thread* result = list_entry(current, struct thread, cochildren);
-    printf("%d\n", result->tid);
     if(result->tid == my_tid) {
       return result;
     }
@@ -325,7 +324,6 @@ void
 thread_exit (void) 
 {
   struct thread *cur = thread_current ();
-  printf("thread_exit() called on %s\n", cur->name);
   graveDigger(cur);
   ASSERT (!intr_context ());
 #ifdef USERPROG
@@ -337,7 +335,6 @@ thread_exit (void)
   
   // printf("SEMA UP CALLED\n");
   // sema_up(&(cur->waitSema));
-    printf("PAST PEXIT in %s\n", cur->name);
   intr_disable ();
 
   // list_remove (&thread_current()->allelem);
