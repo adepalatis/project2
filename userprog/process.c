@@ -46,7 +46,6 @@ process_execute (const char *file_name)
   struct thread* cur = thread_current();
   struct thread* child = in_all_threads(tid);
   child->parent = cur;
-  printf("CURRENT THREAD: %s\nCHILD THREAD: %s\n",cur->name, child->name);
   list_push_back(&cur->children, &in_all_threads(tid)->cochildren);
   sema_down(&th->load);
   if (tid == TID_ERROR)

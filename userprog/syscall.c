@@ -145,11 +145,11 @@ pid_t exec(const char* cmd_line) {
 
 int wait(pid_t pid) {	
 	struct thread* thisThread = thread_current();
-	printf("IN WAIT: %s\n", thisThread->name);
+	// printf("IN WAIT: %s\n", thisThread->name);
 	if (in_child_processes(&(thisThread->children), pid)==NULL){
 		return -1;
 	}
-	printf("AFTER GET CHILD PROCESSES\n");
+	// printf("AFTER GET CHILD PROCESSES\n");
 	struct thread* dead;
 	if (in_all_threads(pid)!=NULL){
 		int toReturn = process_wait(pid);
@@ -207,7 +207,8 @@ int open(const char* file) {
 
 	else if(f == NULL) {
 		lock_release(&l);
-		return -1;	// ??? exit??
+
+		exit(-1);	// ALTERED FROM "RETURN -1" to "EXIT(-1)"
 	}
 
 	int fd = add_file(f);
@@ -224,7 +225,6 @@ int filesize(int fd) {
 
 int read(int fd, void* buffer, unsigned size) {
 	lock_acquire(&l);
-
 	if(!chillPtr(buffer)) {
 		lock_release(&l);
 		exit(-1);
@@ -246,6 +246,7 @@ int read(int fd, void* buffer, unsigned size) {
 
 	if(bytes < 0) {
 		lock_release(&l);
+
 		return 0;
 	} else if( size > (unsigned)bytes) {
 		size = bytes;
@@ -259,6 +260,7 @@ int read(int fd, void* buffer, unsigned size) {
 	}
 
 	lock_release(&l);
+
 	return bytes_read;
 }
 
