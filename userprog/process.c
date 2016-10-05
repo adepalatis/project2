@@ -72,12 +72,13 @@ start_process (void *file_name_)
 	  if_.cs = SEL_UCSEG;
 	  if_.eflags = FLAG_IF | FLAG_MBS;
 	  success = load (file_name, &if_.eip, &if_.esp);
-    
+   
     thread_current()->parent->load_success = success;
 
     struct thread* test = thread_current();
     struct thread* th = test->parent;
     sema_up(&th->load);
+     // printf("LOAD DONE\n");
 	  /* If load failed, quit. */
 	  palloc_free_page (file_name);
 	  if (!success){
@@ -511,7 +512,6 @@ setup_stack (const char* cmd, void **esp)
 {
 	uint8_t *kpage;
 	bool success = false;
-
 	/* Tokenize the command from the command line */
 	char* token, save_ptr;
 	char* argv[128];

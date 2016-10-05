@@ -223,7 +223,6 @@ thread_create (const char *name, int priority,
     return TID_ERROR;
 
   /* Initialize thread. */
-  
   init_thread (t, name, priority);
   tid = t->tid = allocate_tid ();
 
@@ -511,7 +510,23 @@ init_thread (struct thread *t, const char *name, int priority)
 
   memset (t, 0, sizeof *t);
   t->status = THREAD_BLOCKED;
+  int done = 1;
+  int length =0;
+  while (done){
+    if (name[length]!=' '){
+      length++;
+    }
+    else if(length==strlen(name)){
+      length = 0;
+      done = 0;
+    }
+    else{done = 0;}
+  }
   strlcpy (t->name, name, sizeof t->name);
+
+  if (length!=0){
+    t->name[length]=NULL;
+  }
   t->stack = (uint8_t *) t + PGSIZE;
   t->priority = priority;
   t->magic = THREAD_MAGIC;
