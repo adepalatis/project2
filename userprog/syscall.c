@@ -24,7 +24,7 @@ syscall_init (void)
 }
 
 int chillPtr(void* ptr){
-	if (ptr==NULL || ptr >= PHYS_BASE){
+	if (ptr==NULL || ptr > PHYS_BASE){
 		return 0;
 	}
 	if (pagedir_get_page(thread_current()->pagedir, ptr) == NULL){
@@ -36,11 +36,15 @@ int chillPtr(void* ptr){
 static void
 syscall_handler (struct intr_frame *f UNUSED) 
 {
+	if (!chillPtr(f->esp)){
+		exit(-1);
+	}
 	int* sp = f->esp;
 	int syscall_num = *sp;
 	if (!(chillPtr(sp)&&chillPtr(sp+1)&&chillPtr(sp+2)&&chillPtr(sp+3))) {
 		exit(-1);
 	}
+
 	// printf("%04x\t %d\n", sp, syscall_num);
 
 	switch(syscall_num) {
