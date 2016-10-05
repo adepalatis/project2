@@ -30,8 +30,7 @@ tid_t
 process_execute (const char *file_name) 
 {
 	char *fn_copy;
-	tid_t tid;
-
+	tid_t tid;;
 	/* Make a copy of FILE_NAME.
 	 Otherwise there's a race between the caller and load(). */
 	fn_copy = palloc_get_page (0);
@@ -47,6 +46,7 @@ process_execute (const char *file_name)
   struct thread* cur = thread_current();
   struct thread* child = in_all_threads(tid);
   child->parent = cur;
+  printf("CURRENT THREAD: %s\nCHILD THREAD: %s\n",cur->name, child->name);
   list_push_back(&cur->children, &in_all_threads(tid)->cochildren);
   sema_down(&th->load);
   if (tid == TID_ERROR)
@@ -93,6 +93,7 @@ start_process (void *file_name_)
 		 arguments on the stack in the form of a `struct intr_frame',
 		 we just point the stack pointer (%esp) to our stack frame
 		 and jump to it. */
+
 	  asm volatile ("movl %0, %%esp; jmp intr_exit" : : "g" (&if_) : "memory");
     NOT_REACHED ();
 
@@ -137,18 +138,16 @@ process_wait (tid_t child_tid UNUSED)
   }
 
   // Check if the child was terminated by the kernel
-  if(!child->called_exit) {
-    return -1;
-  }
+  // if(!child->called_exit) {
+  //   return -1;
+  // }
 
   // Check if the child already terminated
   if((otherchild = in_grave(child_tid))==NULL) {
     // Wait on the child
-    // printf("SEMA DOWN CALLED IF\n");
     sema_down(&child->waitSema);
   }
   else {
-    // printf("SEMA DOWN CALLED ELSE: %d\n", child->waitSema.value);
     sema_down(&child->waitSema);
   }
   

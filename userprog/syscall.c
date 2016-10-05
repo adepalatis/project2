@@ -131,8 +131,7 @@ pid_t exec(const char* cmd_line) {
 		lock_release(&l);
 		return pid;
 	}
-
-	process_wait(pid);
+	// process_wait(pid);
 
 	// Check if current thread had loading error
 	if(!thread_current()->load_success) {
@@ -144,12 +143,13 @@ pid_t exec(const char* cmd_line) {
 	return pid;
 }
 
-int wait(pid_t pid) {
-	// printf("IN WAIT\n");
+int wait(pid_t pid) {	
 	struct thread* thisThread = thread_current();
+	printf("IN WAIT: %s\n", thisThread->name);
 	if (in_child_processes(&(thisThread->children), pid)==NULL){
 		return -1;
 	}
+	printf("AFTER GET CHILD PROCESSES\n");
 	struct thread* dead;
 	if (in_all_threads(pid)!=NULL){
 		int toReturn = process_wait(pid);
