@@ -67,7 +67,7 @@ syscall_handler (struct intr_frame *f UNUSED)
 			break;
 
 		case SYS_CREATE:
-			f->eax= create((char*) (sp+1), *(unsigned*)(sp+2));
+			f->eax= create(*((char**) (sp+1)), *(unsigned*)(sp+2));
 			break;
 
 		case SYS_REMOVE:
@@ -75,7 +75,7 @@ syscall_handler (struct intr_frame *f UNUSED)
 			break;
 
 		case SYS_OPEN:
-			f->eax=open((char*) (sp+1));
+			f->eax=open(*((char**) (sp+1)));
 			break;
 
 		case SYS_FILESIZE:
@@ -208,7 +208,7 @@ int open(const char* file) {
 	else if(f == NULL) {
 		lock_release(&l);
 
-		exit(-1);	// ALTERED FROM "RETURN -1" to "EXIT(-1)"
+		return -1;	// ALTERED FROM "RETURN -1" to "EXIT(-1)"
 	}
 
 	int fd = add_file(f);
