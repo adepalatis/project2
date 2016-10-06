@@ -225,7 +225,7 @@ int filesize(int fd) {
 
 int read(int fd, void* buffer, unsigned size) {
 	lock_acquire(&l);
-	
+
 	if(!chillPtr(buffer)) {
 		lock_release(&l);
 		exit(-1);
@@ -284,6 +284,10 @@ int write (int fd, const void *buffer, unsigned size) {
 		putbuf(buffer, size);
 		lock_release(&l);
 		return size;
+	}
+	else if(fd < 0 || fd > thread_current()->fd - 1) {
+		lock_release(&l);
+		return 0;
 	}
 	else {
 		struct file* f = get_file(fd);
