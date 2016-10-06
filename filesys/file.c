@@ -2,6 +2,7 @@
 #include <debug.h>
 #include "filesys/inode.h"
 #include "threads/malloc.h"
+#include "threads/thread.h"
 
 /* Opens a file for the given INODE, of which it takes ownership,
    and returns the new file.  Returns a null pointer if an
@@ -54,7 +55,9 @@ file_get_inode (struct file *file)
 
 /* Actually implement */
 struct file* get_file(int fd) {
-  return NULL;
+  struct thread* th = thread_current();
+  struct file* f = th->fd_table[fd];
+  return f;
 }
 
 /* Reads SIZE bytes from FILE into BUFFER,
