@@ -135,6 +135,9 @@ process_wait (tid_t child_tid UNUSED)
   if(child->waited_on) {
     return -1;
   }
+  else{
+    child->waited_on = true;
+  }
 
   // Check if the child was terminated by the kernel
   // if(!child->called_exit) {
@@ -150,11 +153,12 @@ process_wait (tid_t child_tid UNUSED)
     sema_down(&child->waitSema);
   }
   
-  child->waited_on = true;
+  
   if (child==NULL){
     // printf("DEAD CHILD IS NULL\n");
   }
   int returnExit = child->exitCode;
+  list_remove(&child->cochildren);
   sema_up(&child->dead);
   // printf("DEAD SEMA UP SUCCESSFULLY******\n");
   return returnExit;  
