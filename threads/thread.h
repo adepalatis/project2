@@ -4,6 +4,7 @@
 #include <debug.h>
 #include <list.h>
 #include <stdint.h>
+#include "filesys/file.h"
 #include "threads/synch.h"
 
 /* States in a thread's life cycle. */
@@ -107,6 +108,7 @@ struct thread
     struct list open_file_list;
     struct list_elem cofiles;
     int fd;
+    struct file* fd_table[100];
 
     // struct semaphore child_wait;
 
@@ -158,7 +160,6 @@ int thread_get_nice (void);
 void thread_set_nice (int);
 int thread_get_recent_cpu (void);
 int thread_get_load_avg (void);
-
 
 struct list* get_children();
 

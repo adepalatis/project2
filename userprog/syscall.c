@@ -9,7 +9,7 @@
 #include "filesys/filesys.h"
 
 static struct lock l;
-static struct semaphore file_sema;
+static struct lock file_lock;
 
 static void syscall_handler (struct intr_frame *);
 int add_file(struct file* f);
@@ -19,7 +19,7 @@ void
 syscall_init (void) 
 {
 	lock_init(&l);
-	sema_init(&file_sema, 1);
+	lock_init(&file_lock);
   	intr_register_int (0x30, 3, INTR_ON, syscall_handler, "syscall");
 }
 
@@ -318,7 +318,7 @@ void close (int fd) {
 }
 
 int add_file(struct file* f) {
-	sema_down(&file_sema);
+	lock_acquire(&file_lock);
 	struct thread* current = thread_current();
 	struct list* open_file_list = &current->open_file_list;
 
@@ -326,13 +326,14 @@ int add_file(struct file* f) {
 	current->fd++;
 
 	list_push_back(open_file_list, &f->file_elem);
+	current->fd_table[f->fd] = f;
 
-	sema_up(&file_sema);
+	lock_release(&file_lock);
 	return f->fd;
 }
 
 void close_and_remove_file(int fd) {
-	sema_down(&file_sema);
+	lock_acquire(&file_lock);
 	struct list_elem* e;
 	struct thread* current = thread_current();
 	struct list* open_file_list = &current->open_file_list;
@@ -340,11 +341,12 @@ void close_and_remove_file(int fd) {
 	for(e = list_begin(open_file_list); e != list_end(open_file_list); e = list_next(e)) {
 		struct file* f = list_entry(e, struct file, file_elem);
 
-		if(f->fd == fd) {
+		if(f != NULL && f->fd == fd) {
 			list_remove(&f->file_elem);
+			current->fd_table[f->fd] = NULL;
 			file_close(f);
 			break;
 		}
 	}
-	sema_up(&file_sema);
+	lock_release(&file_lock);
 }
