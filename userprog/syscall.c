@@ -131,7 +131,6 @@ pid_t exec(const char* cmd_line) {
 		lock_release(&l);
 		return pid;
 	}
-	// process_wait(pid);
 
 	// Check if current thread had loading error
 	if(!thread_current()->load_success) {
@@ -234,6 +233,7 @@ int read(int fd, void* buffer, unsigned size) {
 		return input_getc();
 	} else if(fd == 1) {
 		lock_release(&l);
+		return -1;
 	} else if(fd < 0 || fd > thread_current()->fd - 1) {
 		lock_release(&l);
 		return -1;
