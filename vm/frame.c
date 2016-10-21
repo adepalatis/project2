@@ -9,6 +9,8 @@ struct frame {
 	bool pinned;
 };
 
+static struct frame frame_table[367];
+
 struct frame* get_multiple_frames(enum palloc_flags flags, size_t frame_cnt) {
 	struct pool* pool = flags & PAL_USER ? &user_pool : &kernel_pool;
 	void* frames;
