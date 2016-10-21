@@ -82,7 +82,7 @@ struct thread* in_all_threads(tid_t my_tid) {
   for(struct list_elem* current = list_begin(&all_list); current != list_end(&all_list); current = list_next(current))
    {
     struct thread* result = list_entry(current, struct thread, allelem);
-    if(result->tid == my_tid) {
+    if(result != NULL && result->tid == my_tid) {
       return result;
     }
    }
@@ -93,7 +93,7 @@ struct thread* in_child_processes(struct list* child_list, tid_t my_tid) {
   for(struct list_elem* current = list_begin(child_list); current != list_end(child_list); current = list_next(current))
    {
     struct thread* result = list_entry(current, struct thread, cochildren);
-    if(result->tid == my_tid) {
+    if(result != NULL && result->tid == my_tid) {
       return result;
     }
    }
@@ -103,7 +103,7 @@ struct thread* in_child_processes(struct list* child_list, tid_t my_tid) {
 struct thread* in_grave(tid_t my_tid) {
   for(struct list_elem* current = list_begin(&graveyard); current != list_end(&graveyard); current = list_next(current)) {
     struct thread* result = list_entry(current, struct thread, allelem);
-    if(result->tid == my_tid) {
+    if(result != NULL && result->tid == my_tid) {
       return result;
     }
   }

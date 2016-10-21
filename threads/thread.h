@@ -110,8 +110,6 @@ struct thread
     int fd;
     struct file* fd_table[100];
 
-    // struct semaphore child_wait;
-
     /* Shared between thread.c and synch.c. */
     struct list_elem elem;              /* List element. */
 
