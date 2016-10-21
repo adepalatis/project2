@@ -22,6 +22,7 @@
 #include "threads/palloc.h"
 #include "threads/pte.h"
 #include "threads/thread.h"
+#include "vm/frame.h"
 #ifdef USERPROG
 #include "userprog/process.h"
 #include "userprog/exception.h"
@@ -161,7 +162,8 @@ paging_init (void)
   size_t page;
   extern char _start, _end_kernel_text;
 
-  pd = init_page_dir = palloc_get_page (PAL_ASSERT | PAL_ZERO);
+  // pd = init_page_dir = palloc_get_page (PAL_ASSERT | PAL_ZERO);
+  pd = init_page_dir = get_frame();
   pt = NULL;
   for (page = 0; page < init_ram_pages; page++)
     {

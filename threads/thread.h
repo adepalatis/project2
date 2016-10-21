@@ -173,7 +173,7 @@ void thread_set_nice (int);
 int thread_get_recent_cpu (void);
 int thread_get_load_avg (void);
 
-struct list* get_children();
+struct list* get_children(void);
 
 struct thread* in_all_threads(tid_t my_tid);
 struct thread* in_child_processes(struct list* child_list, tid_t my_tid);
