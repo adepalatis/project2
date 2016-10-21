@@ -2,9 +2,10 @@
 #define FRAME_H 
 
 #include "threads/palloc.h"
-#include "threads/palloc.c"
+#include "threads/vaddr.h"
 
-struct frame* get_multiple_frames(enum palloc_flags flags, size_t frame_cnt);
-struct frame* get_frame(enum palloc_flags flags);
+void frame_table_init(void);
+void* get_frame(void);
+void free_frame(void* u_page);
 
 #endif /* vm/frame.h */

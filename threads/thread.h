@@ -7,6 +7,10 @@
 #include "filesys/file.h"
 #include "threads/synch.h"
 
+struct supp_page_table_entry {
+
+};
+
 /* States in a thread's life cycle. */
 enum thread_status
   {
