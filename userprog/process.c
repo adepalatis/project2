@@ -51,9 +51,11 @@ process_execute (const char *file_name)
   list_push_back(&cur->children, &in_all_threads(tid)->cochildren);
   sema_down(&th->load);
   if (tid == TID_ERROR)
-	palloc_free_page (fn_copy);
+	// palloc_free_page (fn_copy);
+    free_frame(fn_copy);
   if (tid == TID_ERROR) {
-	 palloc_free_page (fn_copy);
+	 // palloc_free_page (fn_copy);
+    free_frame(fn_copy);
   }
 	return tid;
 }
@@ -81,7 +83,8 @@ start_process (void *file_name_)
     sema_up(&th->load);
      // printf("LOAD DONE\n");
 	  /* If load failed, quit. */
-	  palloc_free_page (file_name);
+	  // palloc_free_page (file_name);
+    free_frame(file_name);
 	  if (!success){
       // printf("NOT SUCCESS\n");
   		thread_exit ();
@@ -490,7 +493,8 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
       /* Load this page. */
       if (file_read (file, kpage, page_read_bytes) != (int) page_read_bytes)
         {
-          palloc_free_page (kpage);
+          // palloc_free_page (kpage);
+          free_frame(kpage);
           return false; 
         }
       memset (kpage + page_read_bytes, 0, page_zero_bytes);
@@ -498,7 +502,8 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
       /* Add the page to the process's address space. */
       if (!install_page (upage, kpage, writable)) 
         {
-          palloc_free_page (kpage);
+          // palloc_free_page (kpage);
+          free_frame(kpage);
           return false; 
         }
 
@@ -588,7 +593,8 @@ setup_stack (const char* cmd, void **esp)
       }
 		}
 		else {
-			palloc_free_page (kpage);
+			// palloc_free_page (kpage);
+      free_frame(kpage);
 		}
 	}
 	return success;
