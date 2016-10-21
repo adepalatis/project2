@@ -4,6 +4,7 @@
 #include "frame.h"
 
 struct frame {
+	struct thread* owner;
 	void* u_page;
 	bool in_use;
 	bool pinned;
@@ -24,6 +25,7 @@ void frame_table_init(void) {
 void* get_frame(void) {
 	for(int k = 0; k < 367; k++) {
 		if(!frame_table[k]->in_use && !frame_table[k]->pinned) {
+			frame_table[k]->owner = thread_current();
 			frame_table[k]->in_use = true;
 			return frame_table[k]->u_page;
 		}

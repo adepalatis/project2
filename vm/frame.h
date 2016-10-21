@@ -3,6 +3,7 @@
 
 #include "threads/palloc.h"
 #include "threads/vaddr.h"
+#include "threads/thread.h"
 
 void frame_table_init(void);
 void* get_frame(void);

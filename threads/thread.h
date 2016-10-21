@@ -7,8 +7,13 @@
 #include "filesys/file.h"
 #include "threads/synch.h"
 
-struct supp_page_table_entry {
+enum page_location {
+    SWAP = 001;
+    MEM = 002;
+}
 
+struct supp_page_table_entry {
+    void* page;
 };
 
 /* States in a thread's life cycle. */
