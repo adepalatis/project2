@@ -1,4 +1,4 @@
-#ifndef PAGE.H
-#define PAGE.H
+#ifndef PAGE_H
+#define PAGE_H 
 
 #endif /* vm/page.h */
