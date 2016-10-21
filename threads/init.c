@@ -162,8 +162,7 @@ paging_init (void)
   size_t page;
   extern char _start, _end_kernel_text;
 
-  // pd = init_page_dir = palloc_get_page (PAL_ASSERT | PAL_ZERO);
-  pd = init_page_dir = get_frame();
+  pd = init_page_dir = palloc_get_page (PAL_ASSERT | PAL_ZERO);
   pt = NULL;
   for (page = 0; page < init_ram_pages; page++)
     {
