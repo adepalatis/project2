@@ -8,12 +8,13 @@
 #include "threads/synch.h"
 
 enum page_location {
-    SWAP = 001;
-    MEM = 002;
-}
+    SWAP = 001,
+    MEM = 002
+};
 
 struct supp_page_table_entry {
     void* page;
+    enum page_location location; // value of the enum defined directly above struct definition
 };
 
 /* States in a thread's life cycle. */

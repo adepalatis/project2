@@ -38,6 +38,7 @@ void free_frame(void* u_page) {
 	for(int k = 0; k < 367; k++) {
 		if(frame_table[k]->u_page == u_page) {
 			memset(u_page, 0, PGSIZE);
+			frame_table[k]->owner = NULL;
 			frame_table[k]->in_use = false;
 			frame_table[k]->pinned = false;
 		}
