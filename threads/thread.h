@@ -14,6 +14,8 @@ enum page_location {
 
 struct supp_page_table_entry {
     void* page;
+    struct file* file;
+    int swap_idx;
     enum page_location location; // value of the enum defined directly above struct definition
 };
 
@@ -130,6 +132,8 @@ struct thread
 
     /* Owned by thread.c. */
     unsigned magic;                     /* Detects stack overflow. */
+
+    /* Supplemental page table */
   };
 
 
