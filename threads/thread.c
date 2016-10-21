@@ -12,6 +12,7 @@
 #include "threads/synch.h"
 #include "threads/vaddr.h"
 #include "lib/kernel/list.h"
+#include "vm/frame.h"
 #ifdef USERPROG
 #include "userprog/process.h"
 #endif
@@ -218,7 +219,8 @@ thread_create (const char *name, int priority,
   ASSERT (function != NULL);
 
   /* Allocate thread. */
-  t = palloc_get_page (PAL_ZERO);
+  // t = palloc_get_page (PAL_ZERO);
+  t = get_frame();
   if (t == NULL)
     return TID_ERROR;
 
@@ -612,7 +614,8 @@ thread_schedule_tail (struct thread *prev)
   if (prev != NULL && prev->status == THREAD_DYING && prev != initial_thread) 
     {
       ASSERT (prev != cur);
-      palloc_free_page (prev);
+      // palloc_free_page (prev);
+      free_frame(prev);
     }
 }
 
@@ -653,7 +656,7 @@ allocate_tid (void)
   return tid;
 }
 
-struct list* get_children() {
+struct list* get_children(void) {
   return &thread_current()->children;
 }
 
