@@ -48,7 +48,7 @@ pagedir_destroy (uint32_t *pd)
           free_frame(pt);
       }
   // palloc_free_page (pd);
-      free_frame(pd);
+      free_frame(pd); //
 }
 
 /* Returns the address of the page table entry for virtual
