@@ -19,6 +19,16 @@ struct ste* get_ste(void) {
 	return NULL;
 }
 
+void load_to_mem(void* kpage, struct thread* process){
+	struct ste* swap_entry = get_ste_for_thread(kpage, process);
+	void* page = get_frame();
+	for (int idx = 0; idx<8 ; idx++){
+		//write all blocks to the newly allocated page from the block
+		block_read(swap_entry->swap_block, idx, ((int*)page) + 128*idx);
+	}
+	pagedir_set_page(process->pagedir, page, kpage, true);
+	swap_entry->thread = NULL;
+}
 
 struct ste* get_ste_for_thread(void* kpage, struct thread* process) {
 	for(int k = 0; k < 1024; k++) {
