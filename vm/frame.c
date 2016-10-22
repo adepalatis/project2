@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include "frame.h"
+#include "userprog/pagedir.h"
 
 struct frame {
 	struct thread* owner;
@@ -28,6 +29,21 @@ void* get_frame(void) {
 			frame_table[k]->owner = thread_current();
 			frame_table[k]->in_use = true;
 			return frame_table[k]->u_page;
+		}
+	}
+	void* pd = active_pd();
+	for(int k = 0; k < 367; k++) {
+		if (!pagedir_is_accessed(pd, frame_table[k]) && !frame_table[k]->pinned){
+			do_evict_thing_here();
+		}
+		else{
+			pagedir_set_accessed(pd, frame_table[k], false);
+		}
+
+	}
+	for(int k = 0; k < 367; k++) {
+		if (!pagedir_is_accessed(pd, frame_table[k]) && !frame_table[k]->pinned){
+			do_evict_thing_here();
 		}
 	}
 	PANIC("No more free frames");

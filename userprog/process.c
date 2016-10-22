@@ -72,8 +72,8 @@ start_process (void *file_name_)
 	  if_.gs = if_.fs = if_.es = if_.ds = if_.ss = SEL_UDSEG;
 	  if_.cs = SEL_UCSEG;
 	  if_.eflags = FLAG_IF | FLAG_MBS;
-	  success = load (file_name, &if_.eip, &if_.esp);
-   
+	  // success = load (file_name, &if_.eip, &if_.esp);
+    success = true;
     thread_current()->parent->load_success = success;
 
     struct thread* test = thread_current();
@@ -471,7 +471,6 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
   ASSERT ((read_bytes + zero_bytes) % PGSIZE == 0);
   ASSERT (pg_ofs (upage) == 0);
   ASSERT (ofs % PGSIZE == 0);
-
   file_seek (file, ofs);
   while (read_bytes > 0 || zero_bytes > 0) 
     {
@@ -483,7 +482,9 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
 
       /* Get a page of memory. */
       // uint8_t *kpage = palloc_get_page (PAL_USER);
+
       uint8_t *kpage = get_frame();
+
       if (kpage == NULL)
         return false;
 
