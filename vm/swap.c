@@ -8,3 +8,12 @@ void swap_table_init(void) {
 		swap_table[k].page = NULL;
 	}
 }
+
+struct ste* get_ste(void) {
+	for(int k = 0; k < 1024; k++) {
+		if(swap_table[k].thread == NULL) {
+			return &swap_table[k];
+		}
+	}
+	return NULL;
+}

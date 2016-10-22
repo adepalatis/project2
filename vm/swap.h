@@ -2,6 +2,7 @@
 #define SWAP_H 
 
 #include "devices/block.h"
+#include <debug.h>
 
 struct ste {
 	struct thread* thread;
@@ -10,5 +11,6 @@ struct ste {
 };
 
 void swap_table_init(void);
+struct ste* get_ste(void);
 
 #endif /* vm/swap.h */
