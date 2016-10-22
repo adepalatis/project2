@@ -6,11 +6,12 @@
 
 struct ste {
 	struct thread* thread;
-	void* page;
+	void* kpage;
 	struct block* swap_block;
 };
 
 void swap_table_init(void);
 struct ste* get_ste(void);
+struct ste* get_ste_for_thread(void* kpage, struct thread* process);
 
 #endif /* vm/swap.h */
