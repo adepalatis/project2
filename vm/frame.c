@@ -15,7 +15,7 @@ static struct frame* frame_table[367];
 
 void frame_table_init(void) {
 	for(int k = 0; k < 367; k++) {
-		frame_table[k]->u_page = palloc_get_page(PAL_USER);
+		frame_table[k]->u_page = palloc_get_page(PAL_USER | PAL_ZERO);
 		frame_table[k]->in_use = false;
 		frame_table[k]->pinned = false;
 	}
