@@ -13,4 +13,6 @@ RemoteSystemTempFiles/
 */.tags
 .tags
 .tags_sorted_by_file
+.dsk
+*/.dsk
 */.tags_sorted_by_file
