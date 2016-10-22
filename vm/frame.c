@@ -74,5 +74,6 @@ void evict(struct frame* toEvict){
 	}
 	swap_entry->thread = toEvict->owner;
 	swap_entry->kpage = pagedir_get_page(toEvict->owner->pagedir, toEvict->u_page);
+	pagedir_clear_page(toEvict->owner->pagedir, toEvict->u_page);
 	memset (toEvict->u_page, 0, PGSIZE);
 }
