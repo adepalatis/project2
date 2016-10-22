@@ -2,11 +2,16 @@
 
 struct ste swap_table[1024];
 
+static struct block_operations swap_ops  = { 
+	block_read,
+	block_write
+};
+
 void swap_table_init(void) {
 	for(int k = 0; k < 1024; k++) {
 		swap_table[k].thread = NULL;
 		swap_table[k].kpage = NULL;
-		// swap_table[k].swap_block = block_register(NULL, BLOCK_SWAP, NULL, 8, );	// fill in params
+		swap_table[k].swap_block = block_register(NULL, BLOCK_SWAP, NULL, 8, &swap_ops, NULL);	// fill in params
 	}
 }
 
