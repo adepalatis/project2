@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include "frame.h"
-#include "userprog/pagedir.h"
 
 struct frame {
 	struct thread* owner;
@@ -34,7 +33,7 @@ void* get_frame(void) {
 	void* pd = get_pd();
 	for(int k = 0; k < 367; k++) {
 		if (!pagedir_is_accessed(pd, frame_table[k]) && !frame_table[k]->pinned){
-			evict();
+			evict(&frame_table[k]);
 		}
 		else{
 			pagedir_set_accessed(pd, frame_table[k], false);
@@ -42,7 +41,7 @@ void* get_frame(void) {
 	}
 	for(int k = 0; k < 367; k++) {
 		if (!pagedir_is_accessed(pd, frame_table[k]) && !frame_table[k]->pinned){
-			evict();
+			evict(frame_table[k]->u_page);
 		}
 	}
 	PANIC("No more free frames");
@@ -61,6 +60,15 @@ void free_frame(void* u_page) {
 }
 
 
-void evict(void* toEvict){
-
+void evict(struct frame* toEvict){
+	struct ste* swap_entry = get_ste();
+	if (ste==NULL){
+		PANIC("No more swap");
+	}
+	struct block* swap_block = ste->swap_block;
+	for (int idx = 0; idx<8 ; idx++){
+		block_write(swap_block, idx, ((int*) toEvict->u_page) + 128*idx);
+	}
+	memset (toEvict->u_page, 0, PGSIZE);
+	ste->thread = toEvict->owner;
 }
