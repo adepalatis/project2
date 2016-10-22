@@ -19,6 +19,7 @@ struct ste* get_ste(void) {
 	return NULL;
 }
 
+
 struct ste* get_ste_for_thread(void* kpage, struct thread* process) {
 	for(int k = 0; k < 1024; k++) {
 		if(swap_table[k].thread == process && swap_table[k].kpage == kpage) {

@@ -65,16 +65,14 @@ void free_frame(void* u_page) {
 
 void evict(struct frame* toEvict){
 	struct ste* swap_entry = get_ste();
-	if (ste==NULL){
+	if (swap_entry==NULL){
 		PANIC("No more swap");
 	}
-	struct block* swap_block = ste->swap_block;
+	struct block* swap_block = swap_entry->swap_block;
 	for (int idx = 0; idx<8 ; idx++){
 		block_write(swap_block, idx, ((int*) toEvict->u_page) + 128*idx);
 	}
-	
-	ste->thread = toEvict->owner;
-	ste->kpage = pagedir_get_page(toEvict->owner->pd, toEvict->u_page);
+	swap_entry->thread = toEvict->owner;
+	swap_entry->kpage = pagedir_get_page(toEvict->owner->pagedir, toEvict->u_page);
 	memset (toEvict->u_page, 0, PGSIZE);
-
 }
