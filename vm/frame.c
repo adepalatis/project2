@@ -31,19 +31,18 @@ void* get_frame(void) {
 			return frame_table[k]->u_page;
 		}
 	}
-	void* pd = active_pd();
+	void* pd = get_pd();
 	for(int k = 0; k < 367; k++) {
 		if (!pagedir_is_accessed(pd, frame_table[k]) && !frame_table[k]->pinned){
-			do_evict_thing_here();
+			evict();
 		}
 		else{
 			pagedir_set_accessed(pd, frame_table[k], false);
 		}
-
 	}
 	for(int k = 0; k < 367; k++) {
 		if (!pagedir_is_accessed(pd, frame_table[k]) && !frame_table[k]->pinned){
-			do_evict_thing_here();
+			evict();
 		}
 	}
 	PANIC("No more free frames");
@@ -61,3 +60,7 @@ void free_frame(void* u_page) {
 	}
 }
 
+
+void evict(void* toEvict){
+
+}
