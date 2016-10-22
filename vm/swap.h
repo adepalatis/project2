@@ -6,7 +6,7 @@
 struct ste {
 	struct thread* thread;
 	void* page;
-	int swap_idx;
+	struct block* swap_block;
 };
 
 void swap_table_init(void);
