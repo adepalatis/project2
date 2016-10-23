@@ -7,10 +7,13 @@
 #include "threads/thread.h"
 #include "threads/vaddr.h"
 #include "syscall.h"
-#include "page.h"
 
 /* Number of page faults processed. */
 static long long page_fault_cnt;
+
+static int stack_size;
+static int MAX_ADDR;
+#define MAX_STACK_SIZE 20 * PGSIZE
 
 static void kill (struct intr_frame *);
 static void page_fault (struct intr_frame *);
@@ -62,6 +65,8 @@ exception_init (void)
      We need to disable interrupts for page faults because the
      fault address is stored in CR2 and needs to be preserved. */
   intr_register_int (14, 0, INTR_OFF, page_fault, "#PF Page-Fault Exception");
+  stack_size = PGSIZE;
+  MAX_ADDR = (int)PHYS_BASE - stack_size;
 }
 
 /* Prints exception statistics. */
@@ -155,6 +160,17 @@ page_fault (struct intr_frame *f)
   not_present = (f->error_code & PF_P) == 0;
   write = (f->error_code & PF_W) != 0;
   user = (f->error_code & PF_U) != 0;
+
+  /* If stack ran out of space, allocate additional page */
+  if((int)f->esp <= MAX_ADDR) {
+    /* Check for stack overflow */
+    if(stack_size > MAX_STACK_SIZE) {
+      PANIC("Stack size over 8 MB (stack overflow)");
+    }
+    // call function to allocate an additional page
+    stack_size += PGSIZE;
+    MAX_ADDR -= PGSIZE;
+  }
 
   /* if the page is not loaded, then load it for the user! */
   if(not_present){
