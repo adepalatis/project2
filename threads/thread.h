@@ -7,15 +7,16 @@
 #include "filesys/file.h"
 #include "threads/synch.h"
 
-enum page_location {
-    SWAP = 001,
-    MEM = 002
+enum page_type {
+    STACK = 001,
+    CODE = 002
 };
 
 struct supp_page_table_entry {
     struct file* file;
-    int swap_idx;
-    enum page_location location; // value of the enum defined directly above struct definition
+    enum page_type type;
+    // enum page_location location; // value of the enum defined directly above struct definition
+    
 };
 
 /* States in a thread's life cycle. */

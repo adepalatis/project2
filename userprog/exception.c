@@ -2,11 +2,7 @@
 #include <inttypes.h>
 #include <stdio.h>
 #include "userprog/gdt.h"
-#include "userprog/pagedir.h"
-#include "threads/interrupt.h"
-#include "threads/thread.h"
-#include "threads/vaddr.h"
-#include "syscall.h"
+
 
 /* Number of page faults processed. */
 static long long page_fault_cnt;
@@ -111,6 +107,16 @@ kill (struct intr_frame *f)
     }
 }
 
+
+bool load_from_disk(struct thread* th, void* fault_addr){
+  struct supp_page_table_entry* supp_table = th->spt;
+  // for (int i=0; i<5; i++){
+
+  // }
+  return true;
+}
+
+
 /* Page fault handler.  This is a skeleton that must be filled in
    to implement virtual memory.  Some solutions to project 2 may
    also require modifying this code.
@@ -158,8 +164,13 @@ page_fault (struct intr_frame *f)
   /* if the page is not loaded, then load it for the user! */
   if(not_present){
     void* page = pagedir_get_page(thread_current()->pagedir, fault_addr);
-    load_to_mem(page, thread_current());
-    return;
+    bool loaded = load_to_mem(page, thread_current());
+    if (!loaded){
+      loaded = load_from_disk(thread_current(), fault_addr);
+    }
+    if (!loaded){
+      PANIC("NOT IN SWAP OR SUPP PAGE TABLE\n");
+    }
   }
 
   /* To implement virtual memory, delete the rest of the function
