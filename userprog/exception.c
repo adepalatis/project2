@@ -7,7 +7,6 @@
 #include "threads/thread.h"
 #include "threads/vaddr.h"
 #include "syscall.h"
-#include "page.h"
 
 /* Number of page faults processed. */
 static long long page_fault_cnt;
@@ -160,6 +159,7 @@ page_fault (struct intr_frame *f)
   if(not_present){
     void* page = pagedir_get_page(thread_current()->pagedir, fault_addr);
     load_to_mem(page, thread_current());
+    return;
   }
 
   /* To implement virtual memory, delete the rest of the function
