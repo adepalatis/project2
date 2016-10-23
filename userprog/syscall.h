@@ -6,7 +6,7 @@
 
 void syscall_init (void);
 
-void halt();
+void halt(void);
 
 void exit(int status);
 

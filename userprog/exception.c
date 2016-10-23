@@ -172,7 +172,7 @@ page_fault (struct intr_frame *f)
   user = (f->error_code & PF_U) != 0;
 
   /* If stack ran out of space, allocate additional page */
-  if((int)f->esp <= MAX_ADDR) {
+  if(MAX_ADDR - (int)fault_addr <= 32) {
     /* Check for stack overflow */
     if(stack_size > MAX_STACK_SIZE) {
       PANIC("Stack size over 8 MB (stack overflow)");
