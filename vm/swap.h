@@ -2,6 +2,7 @@
 #define SWAP_H 
 
 #include "devices/block.h"
+#include "devices/ide.h"
 #include <debug.h>
 #include "frame.h"
 

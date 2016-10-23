@@ -2,9 +2,17 @@
 
 struct ste swap_table[1024];
 
-static struct block_operations swap_ops  = { 
-	block_read,
-	block_write
+static void swap_read(struct block* block, block_sector_t sector, void* buffer) {
+
+}
+
+static void swap_write(struct block* block, block_sector_t sector, const void* buffer) {
+
+}
+
+static struct block_operations swap_ops = {
+	swap_read,
+	swap_write
 };
 
 void swap_table_init(void) {
