@@ -24,8 +24,11 @@ struct ste* get_ste(void) {
 	return NULL;
 }
 
-void load_to_mem(void* kpage, struct thread* process){
+bool load_to_mem(void* kpage, struct thread* process){
 	struct ste* swap_entry = get_ste_for_thread(kpage, process);
+	if (swap_entry==NULL){
+		return false;
+	}
 	void* page = get_frame();
 	for (int idx = 0; idx<8 ; idx++){
 		//write all blocks to the newly allocated page from the block
@@ -33,6 +36,7 @@ void load_to_mem(void* kpage, struct thread* process){
 	}
 	pagedir_set_page(process->pagedir, page, kpage, true);
 	swap_entry->thread = NULL;
+	return true;
 }
 
 struct ste* get_ste_for_thread(void* kpage, struct thread* process) {
@@ -41,6 +45,6 @@ struct ste* get_ste_for_thread(void* kpage, struct thread* process) {
 			return &swap_table[k];
 		}
 	}
-	PANIC("Page not found for thread in swap table");
+	// PANIC("Page not found for thread in swap table");
 	return NULL;
 }

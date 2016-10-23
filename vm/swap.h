@@ -14,6 +14,6 @@ struct ste {
 void swap_table_init(void);
 struct ste* get_ste(void);
 struct ste* get_ste_for_thread(void* kpage, struct thread* process);
-void load_to_mem(void* kpage, struct thread* process);
+bool load_to_mem(void* kpage, struct thread* process);
 
 #endif /* vm/swap.h */
