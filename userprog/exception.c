@@ -3,10 +3,12 @@
 #include <stdio.h>
 #include "userprog/gdt.h"
 #include "userprog/pagedir.h"
+#include "userprog/process.h"
 #include "threads/interrupt.h"
 #include "threads/thread.h"
 #include "threads/vaddr.h"
 #include "syscall.h"
+#include "vm/frame.h"
 
 /* Number of page faults processed. */
 static long long page_fault_cnt;
@@ -180,6 +182,8 @@ page_fault (struct intr_frame *f)
     // call function to allocate an additional page
     stack_size += PGSIZE;
     MAX_ADDR -= PGSIZE;
+    void* newFrame = get_frame();
+    install_page_public (MAX_ADDR, newFrame, true);
   }
 
   /* if the page is not loaded, then load it for the user! */
