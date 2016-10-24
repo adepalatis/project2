@@ -150,6 +150,7 @@ thread_start (void)
   /* Create the idle thread. */
   struct semaphore idle_started;
   sema_init (&idle_started, 0);
+  // printf("Before thread create\n");
   thread_create ("idle", PRI_MIN, idle, &idle_started);
 
   /* Start preemptive thread scheduling. */
@@ -209,7 +210,9 @@ tid_t
 thread_create (const char *name, int priority,
                thread_func *function, void *aux) 
 {
+  // printf("BEFORE THREAD CURRENT\n");
   struct thread* th = thread_current();
+  // printf("AFTER THREAD CURRENT\n");
   struct thread *t;
   struct kernel_thread_frame *kf;
   struct switch_entry_frame *ef;
@@ -219,12 +222,13 @@ thread_create (const char *name, int priority,
   ASSERT (function != NULL);
 
   /* Allocate thread. */
-  // t = palloc_get_page (PAL_ZERO);
+  t = palloc_get_page (PAL_ZERO);
   // t = get_frame();
   if (t == NULL)
     return TID_ERROR;
 
   /* Initialize thread. */
+  // printf("BEFORE INIT THREAD\n");
   init_thread (t, name, priority);
   tid = t->tid = allocate_tid ();
 
@@ -243,7 +247,7 @@ thread_create (const char *name, int priority,
   sf->eip = switch_entry;
   sf->ebp = 0;
   /* Add to run queue. */
-
+  // printf("BEFORE THREAD UNBLOCK\n");
   thread_unblock (t);
   // printf("PROCESS STARTED************\n");
   return tid;
@@ -339,6 +343,7 @@ thread_exit (void)
   intr_disable ();
 
   // list_remove (&thread_current()->allelem);
+
   thread_current()->status = THREAD_DYING;
   // printf("Thread EXIT FINISH_DUUUUUDEE*****\n");
   
@@ -632,7 +637,6 @@ schedule (void)
   struct thread *cur = running_thread ();
   struct thread *next = next_thread_to_run ();
   struct thread *prev = NULL;
-
   ASSERT (intr_get_level () == INTR_OFF);
   ASSERT (cur->status != THREAD_RUNNING);
   ASSERT (is_thread (next));

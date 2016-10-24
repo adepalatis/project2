@@ -29,6 +29,7 @@
 #include "userprog/gdt.h"
 #include "userprog/syscall.h"
 #include "userprog/tss.h"
+
 #else
 #include "tests/threads/tests.h"
 #endif
@@ -97,6 +98,7 @@ main (void)
 
   /* Initialize memory system. */
   palloc_init (user_page_limit);
+  frame_table_init();
   malloc_init ();
   paging_init ();
 
@@ -117,7 +119,9 @@ main (void)
 #endif
 
   /* Start thread scheduler and enable interrupts. */
+  // printf("BEFORE THREAD START\n");
   thread_start ();
+  // printf("AFTER THREAD START\n");
   serial_init_queue ();
   timer_calibrate ();
 
