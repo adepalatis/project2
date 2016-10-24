@@ -31,7 +31,8 @@ tid_t
 process_execute (const char *file_name) 
 {
 	char *fn_copy;
-	tid_t tid;;
+	tid_t tid;
+  // printf("IN PROCESS EXECUTE\n");
 	/* Make a copy of FILE_NAME.
 	 Otherwise there's a race between the caller and load(). */
 	fn_copy = palloc_get_page (0);
@@ -72,8 +73,9 @@ start_process (void *file_name_)
 	  if_.gs = if_.fs = if_.es = if_.ds = if_.ss = SEL_UDSEG;
 	  if_.cs = SEL_UCSEG;
 	  if_.eflags = FLAG_IF | FLAG_MBS;
-	  // success = load (file_name, &if_.eip, &if_.esp);
-    success = true;
+    // printf("IN START PROCESS\n");
+	  success = load (file_name, &if_.eip, &if_.esp);
+
     thread_current()->parent->load_success = success;
 
     struct thread* test = thread_current();

@@ -155,7 +155,7 @@ page_fault (struct intr_frame *f)
      [IA32-v3a] 5.15 "Interrupt 14--Page Fault Exception
      (#PF)". */
 
-
+  // printf("IN PAGE FAULT\n");
   asm ("movl %%cr2, %0" : "=r" (fault_addr));
   if (!chillPtr(fault_addr)){
     f->eax = -1;

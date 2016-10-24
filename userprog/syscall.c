@@ -39,6 +39,7 @@ int chillPtr(void* ptr){
 static void
 syscall_handler (struct intr_frame *f UNUSED) 
 {
+	// printf("IN SYSCALL HANDLER\n");
 	if (!chillPtr(f->esp)){
 		exit(-1);
 	}

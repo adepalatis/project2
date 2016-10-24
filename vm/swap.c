@@ -19,7 +19,7 @@ void swap_table_init(void) {
 	for(int k = 0; k < 1024; k++) {
 		swap_table[k].thread = NULL;
 		swap_table[k].kpage = NULL;
-		swap_table[k].swap_block = block_register(NULL, BLOCK_SWAP, NULL, 8, &swap_ops, NULL);	// fill in params
+		swap_table[k].swap_block = block_get_role(BLOCK_SWAP);
 	}
 }
 
