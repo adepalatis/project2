@@ -157,8 +157,10 @@ page_fault (struct intr_frame *f)
 
   // printf("IN PAGE FAULT\n");
   asm ("movl %%cr2, %0" : "=r" (fault_addr));
+  
   if (!chillPtr(fault_addr)){
     f->eax = -1;
+    // printf("FAULTED IN PAGE FAULT\n");
     exit(-1);
   }
   /* Turn interrupts back on (they were only off so that we could
@@ -174,7 +176,9 @@ page_fault (struct intr_frame *f)
   user = (f->error_code & PF_U) != 0;
 
   /* If stack ran out of space, allocate additional page */
-  if(MAX_ADDR - (int)fault_addr <= 32) {
+  // printf("%d: fault_addr\n %d: max_addr\n %d: diff\n ", (int) fault_addr, MAX_ADDR, MAX_ADDR - (int) fault_addr);
+  if(MAX_ADDR - (int) fault_addr <= 32) {
+    // printf("INSIZE YOOO\n");
     /* Check for stack overflow */
     if(stack_size > MAX_STACK_SIZE) {
       PANIC("Stack size over 8 MB (stack overflow)");
@@ -184,6 +188,7 @@ page_fault (struct intr_frame *f)
     MAX_ADDR -= PGSIZE;
     void* newFrame = get_frame();
     install_page_public (MAX_ADDR, newFrame, true);
+    return;
   }
 
   /* if the page is not loaded, then load it for the user! */
@@ -196,6 +201,7 @@ page_fault (struct intr_frame *f)
     if (!loaded){
       PANIC("NOT IN SWAP OR SUPP PAGE TABLE\n");
     }
+    return;
   }
 
   /* To implement virtual memory, delete the rest of the function

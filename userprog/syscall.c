@@ -25,12 +25,15 @@ syscall_init (void)
 
 int chillPtr(void* ptr){
 	if (ptr==NULL || ptr >= PHYS_BASE){
+		// printf("PTR NULL OR GREATER THAN PHYS_BASE\n");
 		return 0;
 	}
 	if (pagedir_get_page(thread_current()->pagedir, ptr) == NULL){
+		// printf("PAGEDIR GET PAGE IS NULL\n");
 		return 0;
 	}
 	if(is_kernel_vaddr(ptr)) {
+		// printf("IS KERNAL VADDR");
 		return 0;
 	}
 	return 1;
