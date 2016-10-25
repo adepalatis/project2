@@ -559,7 +559,7 @@ init_thread (struct thread *t, const char *name, int priority)
     bool writeable = false;
   }
   t->stack_size = PGSIZE;
-  t->max_esp = (int)PHYS_BASE - t->stack_size - 4;
+  t->max_esp = (int)PHYS_BASE - t->stack_size ;
 }
 
 /* Allocates a SIZE-byte frame at the top of thread T's stack and
