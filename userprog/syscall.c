@@ -7,6 +7,7 @@
 #include "threads/palloc.h"
 #include "filesys/file.h"
 #include "filesys/filesys.h"
+#include "userprog/exception.h"
 
 static struct lock l;
 static struct lock file_lock;
@@ -28,7 +29,7 @@ int chillPtr(void* ptr){
 		// printf("PTR NULL OR GREATER THAN PHYS_BASE\n");
 		return 0;
 	}
-	if (pagedir_get_page(thread_current()->pagedir, ptr) == NULL){
+	if (pagedir_get_page(thread_current()->pagedir, ptr) == NULL && !(MAX_ADDR - (int) ptr <= 32)){
 		// printf("PAGEDIR GET PAGE IS NULL\n");
 		return 0;
 	}

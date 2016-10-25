@@ -14,7 +14,7 @@
 static long long page_fault_cnt;
 
 static int stack_size;
-static int MAX_ADDR;
+
 #define MAX_STACK_SIZE 20 * PGSIZE
 
 static void kill (struct intr_frame *);
@@ -157,7 +157,7 @@ page_fault (struct intr_frame *f)
 
   // printf("IN PAGE FAULT\n");
   asm ("movl %%cr2, %0" : "=r" (fault_addr));
-  
+
   if (!chillPtr(fault_addr)){
     f->eax = -1;
     // printf("FAULTED IN PAGE FAULT\n");
@@ -177,12 +177,15 @@ page_fault (struct intr_frame *f)
 
   /* If stack ran out of space, allocate additional page */
   // printf("%d: fault_addr\n %d: max_addr\n %d: diff\n ", (int) fault_addr, MAX_ADDR, MAX_ADDR - (int) fault_addr);
-  if(MAX_ADDR - (int) fault_addr <= 32) {
+  if(MAX_ADDR - (int) fault_addr <= 32 && MAX_ADDR - (int) fault_addr > 0) {
     // printf("INSIZE YOOO\n");
     /* Check for stack overflow */
-    if(stack_size > MAX_STACK_SIZE) {
-      PANIC("Stack size over 8 MB (stack overflow)");
-    }
+
+    // if(stack_size > MAX_STACK_SIZE) {
+    //   PANIC("Stack size over 8 MB (stack overflow)");
+    // }
+
+
     // call function to allocate an additional page
     stack_size += PGSIZE;
     MAX_ADDR -= PGSIZE;
@@ -196,14 +199,21 @@ page_fault (struct intr_frame *f)
     void* page = pagedir_get_page(thread_current()->pagedir, fault_addr);
     bool loaded = load_to_mem(page, thread_current());
     if (!loaded){
-      loaded = load_from_disk(thread_current(), fault_addr);
+      // printf("NOT PRESENT AND TRYING TO LOAD FROM DISK");
+      // loaded = load_from_disk(thread_current(), fault_addr);
+      loaded = false;
     }
-    if (!loaded){
-      PANIC("NOT IN SWAP OR SUPP PAGE TABLE\n");
+    if (loaded){
+      return;
     }
-    return;
+    else{
+      f->eax = -1;
+      printf("\nEXITING IN THE END OF LOAD\n");
+      exit(-1);
+    }
   }
 
+  // if (pagedir_get_page(thread_current()->pagedir, ptr) == NULL)
   /* To implement virtual memory, delete the rest of the function
      body, and replace it with code that brings in the page to
      which fault_addr refers. */

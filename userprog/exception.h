@@ -11,6 +11,8 @@
 #include "threads/vaddr.h"
 #include "syscall.h"
 
+
+int MAX_ADDR;
 void exception_init (void);
 void exception_print_stats (void);
 bool load_from_disk(struct thread* th, void* fault_addr);
