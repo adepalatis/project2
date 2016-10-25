@@ -136,7 +136,7 @@ struct thread
     unsigned magic;                     /* Detects stack overflow. */
 
     /* VM */
-    void* max_esp;  /* Another saved stack pointer */
+    uint8_t* max_esp;  /* Another saved stack pointer */
     int stack_size; /* Size in bytes of this thread's stack */
 
     /* Supplemental page table */

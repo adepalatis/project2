@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include "frame.h"
+#include "devices/block.h"
 
 struct frame {
 	struct thread* owner;
@@ -23,17 +24,22 @@ void frame_table_init(void) {
 
 
 static void evict(struct frame* toEvict){
+	// printf("EVICTED BITCH\n");
 	struct ste* swap_entry = get_ste();
 	if (swap_entry==NULL){
 		PANIC("No more swap");
 	}
-	struct block* swap_block = swap_entry->swap_block;
-	for (int idx = 0; idx<8 ; idx++){
+	struct block* swap_block = block_get_role (BLOCK_SWAP);
+	// printf("BEFORE FOR LOOP\n");
+	// block_print_stats();
+	for (int idx = swap_entry->swap_ofs; idx<swap_entry->swap_ofs+8 ; idx++){
+		// printf("TRYING TO WRITE: %s, %d\n", swap_block->name, swap_block->size);
 		block_write(swap_block, idx, ((int*) toEvict->u_page) + 128*idx);
 	}
+	// printf("PAST WRITE BITCH\n");
 	swap_entry->thread = toEvict->owner;
-	swap_entry->kpage = pagedir_get_page(toEvict->owner->pagedir, toEvict->u_page);
-	pagedir_clear_page(toEvict->owner->pagedir, toEvict->u_page);
+	swap_entry->kpage = pg_round_down(toEvict->u_page);
+	// pagedir_clear_page(toEvict->owner->pagedir, toEvict->u_page);
 	memset (toEvict->u_page, 0, PGSIZE);
 }
 
@@ -42,12 +48,13 @@ static void evict(struct frame* toEvict){
 /* Finds and returns the first unused, unpinned frame */
 void* get_frame(void) {
 	for(int k = 0; k < 367; k++) {
-		if(!frame_table[k]. in_use && !frame_table[k].pinned) {
+		if(!frame_table[k].in_use && !frame_table[k].pinned) {
 			frame_table[k].owner = thread_current();
 			frame_table[k].in_use = true;
 			return frame_table[k].u_page;
 		}
 	}
+	// printf("PAST INIT GET FRAME\n");
 	void* pd = get_pd();
 	for(int k = 0; k < 367; k++) {
 		if (!pagedir_is_accessed(pd, frame_table[k].u_page) && !frame_table[k].pinned){
@@ -60,7 +67,7 @@ void* get_frame(void) {
 	}
 	for(int k = 0; k < 367; k++) {
 		if (!pagedir_is_accessed(pd, frame_table[k].u_page) && !frame_table[k].pinned){
-			evict(frame_table[k].u_page);
+			evict(&frame_table[k]);
 			return frame_table[k].u_page;
 		}
 	}
