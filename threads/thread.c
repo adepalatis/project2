@@ -548,6 +548,16 @@ init_thread (struct thread *t, const char *name, int priority)
   old_level = intr_disable ();
   list_push_back (&all_list, &t->allelem);
   intr_set_level (old_level);
+
+  /* Initialize all the SPTEs to null */
+  for(int k = 0; k < 5; k++) {
+    t->spt[k].file = NULL;
+    t->spt[k].ofs = NULL;
+    t->spt[k].upage = NULL;
+    t->spt[k].read_bytes = NULL;
+    t->spt[k].zero_bytes = NULL;
+    bool writeable = false;
+  }
 }
 
 /* Allocates a SIZE-byte frame at the top of thread T's stack and
