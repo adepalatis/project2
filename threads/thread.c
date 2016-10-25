@@ -556,7 +556,7 @@ init_thread (struct thread *t, const char *name, int priority)
     t->spt[k].upage = NULL;
     t->spt[k].read_bytes = NULL;
     t->spt[k].zero_bytes = NULL;
-    bool writeable = false;
+    t->spt[k].writable = false;
   }
   t->stack_size = PGSIZE;
   t->max_esp = (int)PHYS_BASE - t->stack_size - 4;
@@ -690,6 +690,7 @@ struct supp_page_table_entry* get_free_spte(struct thread* t) {
       return &t->spt[k];
     }
   }
+  PANIC("Thread out of SPTEs");
 }
 
 

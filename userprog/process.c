@@ -115,17 +115,6 @@ start_process (void *file_name_)
 int
 process_wait (tid_t child_tid UNUSED) 
 {
-  // struct thread* current = thread_current();
-  // struct thread* child = in_all_threads(child_tid);
-  // if (child==NULL){
-  //   return -1;
-  // }
-  // sema_init(&(child->waitSema),0);
-  // sema_down(&(child->waitSema));
-  // printf("%s\n", child->exitCode);
-  // struct thread* dead = in_grave(child_tid);
-  // return dead->exitCode;
-  struct thread* current = thread_current();
   struct list* children = get_children();
   struct thread* child;
   struct thread* otherchild;
@@ -133,7 +122,7 @@ process_wait (tid_t child_tid UNUSED)
   // Check if the given pid is a child of the current thread
   if((child = in_child_processes(children, child_tid))==NULL) {
     // printf("CHILD IS NULL\n");
-    return -1;
+    return -1;//
   }
 
   // Check if the process associated with "child_tid" was waited on before
@@ -306,7 +295,7 @@ load (const char *file_name, void (**eip) (void), void **esp) {
 	process_activate ();
 
 	/* Open executable file. */
-	char* token, save_ptr;
+	char* save_ptr;
 	char* fn_cpy = (char*)malloc(strlen(file_name) + 1);
 	strlcpy(fn_cpy, file_name, strlen(file_name) + 1);
 	char* file_name2 = strtok_r(fn_cpy, " ", &save_ptr);
@@ -489,6 +478,12 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
 
       /* Add the page to the process' spt */
       struct supp_page_table_entry* spte = get_free_spte(thread_current());
+      // spte->file = file;
+      // spte->ofs = ofs;
+      // spte->upage = upage;
+      // spte->read_bytes = read_bytes;
+      // spte->zero_bytes = zero_bytes;
+      // spte->writable = writable;
 
       if (kpage == NULL)
         return false;
