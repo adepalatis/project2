@@ -13,10 +13,12 @@ enum page_type {
 };
 
 struct supp_page_table_entry {
-    struct file* file;
-    enum page_type type;
-    // enum page_location location; // value of the enum defined directly above struct definition
-    
+    struct file *file;
+    off_t ofs;
+    uint8_t *upage;
+    uint32_t read_bytes;
+    uint32_t zero_bytes;
+    bool writable;
 };
 
 /* States in a thread's life cycle. */
