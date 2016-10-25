@@ -29,8 +29,9 @@ int chillPtr(void* ptr){
 		// printf("PTR NULL OR GREATER THAN PHYS_BASE\n");
 		return 0;
 	}
-	if (pagedir_get_page(thread_current()->pagedir, ptr) == NULL && !(MAX_ADDR - (int) ptr <= 32)){
-		// printf("PAGEDIR GET PAGE IS NULL\n");
+	int dist = MAX_ADDR - (int) ptr;
+	if (pagedir_get_page(thread_current()->pagedir, ptr) == NULL && !(dist <= 32 && dist>=0)){
+		// printf("DIST: %d\nPAGEDIR GET PAGE IS NULL\n", dist);
 		return 0;
 	}
 	if(is_kernel_vaddr(ptr)) {

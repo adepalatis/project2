@@ -176,8 +176,8 @@ page_fault (struct intr_frame *f)
   user = (f->error_code & PF_U) != 0;
 
   /* If stack ran out of space, allocate additional page */
-  // printf("%d: fault_addr\n %d: max_addr\n %d: diff\n ", (int) fault_addr, MAX_ADDR, MAX_ADDR - (int) fault_addr);
-  if(MAX_ADDR - (int) fault_addr <= 32 && MAX_ADDR - (int) fault_addr > 0) {
+  // printf("%d: fault_addr\n %d: max_addr\n %d: diff\n %d: f->esp\n ", (int) fault_addr, MAX_ADDR, MAX_ADDR - (int) fault_addr, f->esp);
+  if(MAX_ADDR - (int) fault_addr <= 32 && MAX_ADDR - (int) fault_addr >= 0) {
     // printf("INSIZE YOOO\n");
     /* Check for stack overflow */
 
@@ -208,7 +208,7 @@ page_fault (struct intr_frame *f)
     }
     else{
       f->eax = -1;
-      printf("\nEXITING IN THE END OF LOAD\n");
+      PANIC("SHIT NOT RIGHT. TOO LAZY TO WAIT FOR THIS TO FINISH\n");
       exit(-1);
     }
   }
