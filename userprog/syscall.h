@@ -34,4 +34,5 @@ void close (int fd);
 
 int chillPtr(void* ptr);
 
+int chillFault(void* ptr);
 #endif /* userprog/syscall.h */

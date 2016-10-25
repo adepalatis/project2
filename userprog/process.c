@@ -485,8 +485,10 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
 
       /* Get a page of memory. */
       // uint8_t *kpage = palloc_get_page (PAL_USER);
-
       uint8_t *kpage = get_frame();
+
+      /* Add the page to the process' spt */
+      struct supp_page_table_entry* spte = get_free_spte(thread_current());
 
       if (kpage == NULL)
         return false;

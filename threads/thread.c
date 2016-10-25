@@ -558,6 +558,8 @@ init_thread (struct thread *t, const char *name, int priority)
     t->spt[k].zero_bytes = NULL;
     bool writeable = false;
   }
+  t->stack_size = PGSIZE;
+  t->max_esp = (int)PHYS_BASE - t->stack_size - 4;
 }
 
 /* Allocates a SIZE-byte frame at the top of thread T's stack and
@@ -680,6 +682,14 @@ void graveDigger(struct thread* cur){
   elem->prev = NULL;
   elem->next = NULL;
   list_push_back(&graveyard, elem);
+}
+
+struct supp_page_table_entry* get_free_spte(struct thread* t) {
+  for(int k = 0; k < 5; k++) {
+    if(t->spt[k].upage == NULL) {
+      return &t->spt[k];
+    }
+  }
 }
 
 

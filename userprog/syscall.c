@@ -30,10 +30,27 @@ int chillPtr(void* ptr){
 		return 0;
 	}
 	int dist = MAX_ADDR - (int) ptr;
-	if (pagedir_get_page(thread_current()->pagedir, ptr) == NULL && !(dist <= 32 && dist>=0)){
+	if (pagedir_get_page(thread_current()->pagedir, ptr) == NULL ){
 		// printf("DIST: %d\nPAGEDIR GET PAGE IS NULL\n", dist);
 		return 0;
 	}
+	if(is_kernel_vaddr(ptr)) {
+		// printf("IS KERNAL VADDR");
+		return 0;
+	}
+	return 1;
+}
+
+int chillFault(void* ptr){
+	if (ptr==NULL || ptr >= PHYS_BASE){
+		// printf("PTR NULL OR GREATER THAN PHYS_BASE\n");
+		return 0;
+	}
+	int dist = MAX_ADDR - (int) ptr;
+	// if (pagedir_get_page(thread_current()->pagedir, ptr) == NULL && !(dist <= 32 && dist>=0)){
+	// 	// printf("DIST: %d\nPAGEDIR GET PAGE IS NULL\n", dist);
+	// 	return 0;
+	// }
 	if(is_kernel_vaddr(ptr)) {
 		// printf("IS KERNAL VADDR");
 		return 0;
@@ -48,6 +65,7 @@ syscall_handler (struct intr_frame *f UNUSED)
 	if (!chillPtr(f->esp)){
 		exit(-1);
 	}
+	// thread_current()->max_esp = f->esp;
 	int* sp = f->esp;
 	int syscall_num = *sp;
 	if (!(chillPtr(sp)&&chillPtr(sp+1)&&chillPtr(sp+2)&&chillPtr(sp+3))) {

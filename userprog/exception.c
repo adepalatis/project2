@@ -13,8 +13,6 @@
 /* Number of page faults processed. */
 static long long page_fault_cnt;
 
-static int stack_size;
-
 #define MAX_STACK_SIZE 2000 * PGSIZE
 
 static void kill (struct intr_frame *);
@@ -67,8 +65,6 @@ exception_init (void)
      We need to disable interrupts for page faults because the
      fault address is stored in CR2 and needs to be preserved. */
   intr_register_int (14, 0, INTR_OFF, page_fault, "#PF Page-Fault Exception");
-  stack_size = PGSIZE;
-  MAX_ADDR = (int)PHYS_BASE - stack_size;
 }
 
 /* Prints exception statistics. */
@@ -164,7 +160,7 @@ page_fault (struct intr_frame *f)
   // printf("IN PAGE FAULT\n");
   asm ("movl %%cr2, %0" : "=r" (fault_addr));
 
-  if (!chillPtr(fault_addr)){
+  if (!chillFault(fault_addr)){
     f->eax = -1;
     // printf("FAULTED IN PAGE FAULT\n");
     exit(-1);
@@ -182,8 +178,10 @@ page_fault (struct intr_frame *f)
   user = (f->error_code & PF_U) != 0;
 
   /* If stack ran out of space, allocate additional page */
-  // printf("%d: fault_addr\n %d: max_addr\n %d: diff\n %d: f->esp\n ", (int) fault_addr, MAX_ADDR, MAX_ADDR - (int) fault_addr, f->esp);
-  if(MAX_ADDR - (int) fault_addr <= 32 && MAX_ADDR - (int) fault_addr >= 0) {
+  struct thread* current = thread_current();
+  printf("%d: fault_addr\n %d: max_addr\n %d: diff\n ", (int) fault_addr, (int)current->max_esp, (int)current->max_esp - (int) fault_addr);
+  
+  if((int)current->max_esp - (int) fault_addr <= 32 && (int)current->max_esp - (int) fault_addr > 0) {
     // printf("INSIZE YOOO\n");
     /* Check for stack overflow */
 
@@ -193,10 +191,10 @@ page_fault (struct intr_frame *f)
 
 
     // call function to allocate an additional page
-    stack_size += PGSIZE;
-    MAX_ADDR -= PGSIZE;
+    current->stack_size += PGSIZE;
+    current->max_esp = (void*)((int)current->max_esp - PGSIZE);
     void* newFrame = get_frame();
-    install_page_public (MAX_ADDR, newFrame, true);
+    install_page_public (current->max_esp, newFrame, true);
     return;
   }
 

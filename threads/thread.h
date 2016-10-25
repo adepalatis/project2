@@ -135,6 +135,10 @@ struct thread
     /* Owned by thread.c. */
     unsigned magic;                     /* Detects stack overflow. */
 
+    /* VM */
+    void* max_esp;  /* Another saved stack pointer */
+    int stack_size; /* Size in bytes of this thread's stack */
+
     /* Supplemental page table */
     struct supp_page_table_entry spt[5];
   };
@@ -182,5 +186,7 @@ struct thread* in_all_threads(tid_t my_tid);
 struct thread* in_child_processes(struct list* child_list, tid_t my_tid);
 struct thread* in_grave(tid_t tid);
 void graveDigger(struct thread* cur);
+
+struct supp_page_table_entry* get_free_spte(struct thread* t);
 
 #endif /* threads/thread.h */
