@@ -2,19 +2,6 @@
 
 struct ste swap_table[1024];
 
-static void swap_read(struct block* block, block_sector_t sector, void* buffer) {
-
-}
-
-static void swap_write(struct block* block, block_sector_t sector, const void* buffer) {
-
-}
-
-static struct block_operations swap_ops = {
-	swap_read,
-	swap_write
-};
-
 void swap_table_init(void) {
 	for(int k = 0; k < 1024; k++) {
 		swap_table[k].thread = NULL;
