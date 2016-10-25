@@ -126,7 +126,7 @@ bool load_from_disk(struct thread* th, void* fault_addr){
   if(supp_table == NULL) return false;
 
   // load all supplemental page table entry's files on to disk
-  for (int each_spte = 0; each_spte < 5; i ++){
+  for (int each_spte = 0; each_spte < 5; each_spte ++){
     void* page = get_frame();
     supp_table[each_spte].file;
     // not yet complete
