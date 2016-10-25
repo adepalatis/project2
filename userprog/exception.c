@@ -15,7 +15,7 @@ static long long page_fault_cnt;
 
 static int stack_size;
 
-#define MAX_STACK_SIZE 20 * PGSIZE
+#define MAX_STACK_SIZE 2000 * PGSIZE
 
 static void kill (struct intr_frame *);
 static void page_fault (struct intr_frame *);
