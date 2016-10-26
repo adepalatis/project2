@@ -197,6 +197,8 @@ page_fault (struct intr_frame *f)
     void* newFrame = get_frame();
     install_page_public (current->max_esp, newFrame, true);
     return;
+  } else if(user && (int)f->esp - (int)fault_addr > 32) {
+    exit(-1);
   }
 
   if(is_user_vaddr(fault_addr)) {
