@@ -9,6 +9,7 @@
 #include "threads/vaddr.h"
 #include "syscall.h"
 #include "vm/frame.h"
+#include <string.h>
 
 /* Number of page faults processed. */
 static long long page_fault_cnt;
@@ -216,6 +217,18 @@ page_fault (struct intr_frame *f)
   //     exit(-1);
   //   }
   // }
+  if(is_user_vaddr(fault_addr)) {
+    void* lower_bound = pg_round_down(fault_addr);
+    for(int k = 0; k < 40; k++) {
+      if(current->spt[k].upage == lower_bound) {
+        // printf("Matched!\n");
+
+        void* kframe = get_frame();
+        int bytes = file_read_at(current->spt[k].file, kframe, current->spt[k].read_bytes, current->spt[k].ofs);
+
+      }
+    }
+  }
 
   // if (pagedir_get_page(thread_current()->pagedir, ptr) == NULL)
   /* To implement virtual memory, delete the rest of the function

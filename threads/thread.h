@@ -17,7 +17,6 @@ struct supp_page_table_entry {
     off_t ofs;
     uint8_t *upage;
     uint32_t read_bytes;
-    uint32_t zero_bytes;
     bool writable;
 };
 
@@ -140,7 +139,7 @@ struct thread
     int stack_size; /* Size in bytes of this thread's stack */
 
     /* Supplemental page table */
-    struct supp_page_table_entry spt[5];
+    struct supp_page_table_entry spt[40];
   };
 
 

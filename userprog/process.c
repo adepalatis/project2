@@ -478,12 +478,11 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
 
       /* Add the page to the process' spt */
       struct supp_page_table_entry* spte = get_free_spte(thread_current());
-      // spte->file = file;
-      // spte->ofs = ofs;
-      // spte->upage = upage;
-      // spte->read_bytes = read_bytes;
-      // spte->zero_bytes = zero_bytes;
-      // spte->writable = writable;
+      spte->file = file;
+      spte->ofs = ofs;
+      spte->upage = pg_round_down(upage);
+      spte->read_bytes = file_length(file);
+      spte->writable = writable;
 
       if (kpage == NULL)
         return false;

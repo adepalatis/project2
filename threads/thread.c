@@ -555,7 +555,6 @@ init_thread (struct thread *t, const char *name, int priority)
     t->spt[k].ofs = NULL;
     t->spt[k].upage = NULL;
     t->spt[k].read_bytes = NULL;
-    t->spt[k].zero_bytes = NULL;
     t->spt[k].writable = false;
   }
   t->stack_size = PGSIZE;
@@ -685,8 +684,9 @@ void graveDigger(struct thread* cur){
 }
 
 struct supp_page_table_entry* get_free_spte(struct thread* t) {
-  for(int k = 0; k < 5; k++) {
+  for(int k = 0; k < 40; k++) {
     if(t->spt[k].upage == NULL) {
+      // printf("%d\n", k);
       return &t->spt[k];
     }
   }
