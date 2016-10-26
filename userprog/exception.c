@@ -181,8 +181,8 @@ page_fault (struct intr_frame *f)
   /* If stack ran out of space, allocate additional page */
   struct thread* current = thread_current();
   // printf("%d: fault_addr\n %d: max_addr\n %d: diff\n ", (int) fault_addr, (int)current->max_esp, (int)current->max_esp - (int) fault_addr);
-  
-  if(user && (int)current->max_esp - (int) fault_addr <= 100000 && (int)current->max_esp - (int) fault_addr > 0) {
+  // printf("%d: fault_addr\n %d: max_addr\n %d: diff\n ", (int) fault_addr, (int)f->esp, (int)f->esp - (int) fault_addr);
+  if(user && (int)f->esp - (int) fault_addr <= 32 && (int)f->esp - (int) fault_addr > 0) {
     // printf("INSIZE YOOO\n");
     /* Check for stack overflow */
 
@@ -199,24 +199,6 @@ page_fault (struct intr_frame *f)
     return;
   }
 
-  /* if the page is not loaded, then load it for the user! */
-  // if(not_present){
-  //   void* page = pagedir_get_page(thread_current()->pagedir, fault_addr);
-  //   bool loaded = load_to_mem(page, thread_current());
-  //   if (!loaded){
-  //     // printf("NOT PRESENT AND TRYING TO LOAD FROM DISK");
-  //     // loaded = load_from_disk(thread_current(), fault_addr);
-  //     loaded = false;
-  //   }
-  //   if (loaded){
-  //     return;
-  //   }
-  //   else{
-  //     f->eax = -1;
-  //     PANIC("SHIT NOT RIGHT. TOO LAZY TO WAIT FOR THIS TO FINISH\n");
-  //     exit(-1);
-  //   }
-  // }
   if(is_user_vaddr(fault_addr)) {
     void* lower_bound = pg_round_down(fault_addr);
     for(int k = 0; k < 40; k++) {
@@ -227,6 +209,25 @@ page_fault (struct intr_frame *f)
         int bytes = file_read_at(current->spt[k].file, kframe, current->spt[k].read_bytes, current->spt[k].ofs);
 
       }
+    }
+  }
+
+  if(not_present){
+    void* page = pg_round_down(fault_addr);
+    // printf("Fault PAGE1: %04x\nRounded PAGE1: %04x\n", fault_addr);
+    bool loaded = load_to_mem(page, thread_current());
+    if (!loaded){
+      // printf("NOT PRESENT AND TRYING TO LOAD FROM DISK");
+      // loaded = load_from_disk(thread_current(), fault_addr);
+      loaded = false;
+    }
+    if (loaded){
+      return;
+    }
+    else{
+      f->eax = -1;
+      PANIC("SHIT NOT RIGHT. TOO LAZY TO WAIT FOR THIS TO FINISH\n");
+      exit(-1);
     }
   }
 

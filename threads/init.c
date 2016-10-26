@@ -23,6 +23,7 @@
 #include "threads/pte.h"
 #include "threads/thread.h"
 #include "vm/frame.h"
+#include "vm/swap.h"
 #ifdef USERPROG
 #include "userprog/process.h"
 #include "userprog/exception.h"
@@ -99,6 +100,7 @@ main (void)
   /* Initialize memory system. */
   palloc_init (user_page_limit);
   frame_table_init();
+  swap_table_init();
   malloc_init ();
   paging_init ();
 

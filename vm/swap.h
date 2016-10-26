@@ -9,7 +9,7 @@
 struct ste {
 	struct thread* thread;
 	void* kpage;
-	struct block* swap_block;
+	int swap_ofs; //in number of blocks
 };
 
 void swap_table_init(void);
