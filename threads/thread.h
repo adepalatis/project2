@@ -17,7 +17,9 @@ struct supp_page_table_entry {
     off_t ofs;
     uint8_t *upage;
     uint32_t read_bytes;
+    uint32_t zero_bytes;
     bool writable;
+    int num_pages;
 };
 
 /* States in a thread's life cycle. */

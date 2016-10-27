@@ -555,7 +555,9 @@ init_thread (struct thread *t, const char *name, int priority)
     t->spt[k].ofs = NULL;
     t->spt[k].upage = NULL;
     t->spt[k].read_bytes = NULL;
+    t->spt[k].zero_bytes = NULL;
     t->spt[k].writable = false;
+    t->spt[k].num_pages = NULL;
   }
   t->stack_size = PGSIZE;
   t->max_esp = (int)PHYS_BASE - t->stack_size ;
