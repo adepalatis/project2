@@ -117,18 +117,25 @@ kill (struct intr_frame *f)
 }
 
 
-bool load_from_disk(struct thread* th, void* fault_addr){
+bool load_from_SPT(struct thread* th, void* fault_addr){
   struct supp_page_table_entry* supp_table = th->spt;
 
   if(supp_table == NULL) return false;
 
-  // load all supplemental page table entry's files on to disk
-  for (int each_spte = 0; each_spte < 5; each_spte ++){
-    void* page = get_frame();
-    supp_table[each_spte].file;
-    // not yet complete
+  void* low_bound = pg_round_down(fault_addr);
+  off_t offset = (int) fault_addr - (int) low_bound;
+
+  // check all supplemental page table entries and put the matching one onto memory
+  for(int each_spte = 0; each_spte < 40; each_spte ++){
+    if(supp_table[each_spte].upage == low_bound){
+      // load file from supplemental page to memory
+      void* page = get_frame();
+      file_read_at (supp_table[each_spte].file, page, 4096, offset);
+      return true;
+    }
   }
-  return true;
+
+  return false;
 }
 
 
@@ -254,7 +261,7 @@ page_fault (struct intr_frame *f)
     bool loaded = load_to_mem(page, thread_current());
     if (!loaded){
       // printf("NOT PRESENT AND TRYING TO LOAD FROM DISK");
-      // loaded = load_from_disk(thread_current(), fault_addr);
+      loaded = load_from_SPT(thread_current(), fault_addr);
       loaded = false;
     }
     if (loaded){

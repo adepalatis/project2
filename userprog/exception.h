@@ -15,6 +15,6 @@
 int MAX_ADDR;
 void exception_init (void);
 void exception_print_stats (void);
-bool load_from_disk(struct thread* th, void* fault_addr);
+bool load_from_SPT(struct thread* th, void* fault_addr);
 
 #endif /* userprog/exception.h */
