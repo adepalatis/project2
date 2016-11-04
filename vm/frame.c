@@ -24,7 +24,7 @@ void frame_table_init(void) {
 
 
 static void evict(struct frame* toEvict){
-	// printf("EVICTED BITCH\n");
+	printf("EVICTED BITCH\n");
 	struct ste* swap_entry = get_ste();
 	if (swap_entry==NULL){
 		PANIC("No more swap");

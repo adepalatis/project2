@@ -118,23 +118,74 @@ kill (struct intr_frame *f)
 
 
 bool load_from_SPT(struct thread* th, void* fault_addr){
-  struct supp_page_table_entry* supp_table = th->spt;
+  struct thread* current = th;
+  for(int k = 0; k < 40; k++) {
+      if (current->spt[k].upage!=NULL){
+      //   printf("Fault addr: %04x\nUPAGE: %04x\n\n", pg_round_down(fault_addr), pg_round_down(current->spt[k].upage));
+        // printf("FILE PTR: %04X\n", current->spt[k].file);
+        printf("Fault Addr: %04x\nUpage rd Down: %04x\nDist: %d\nrd Down + dist: %04x\n", 
+          pg_round_down(fault_addr),pg_round_down(current->spt[k].upage), (current->spt[k].num_pages) * 4096,
+          pg_round_down(current->spt[k].upage)+(current->spt[k].num_pages) * 4096);
 
-  if(supp_table == NULL) return false;
+      }
+      if(current->spt[k].upage!= NULL && pg_round_down(fault_addr) >= pg_round_down(current->spt[k].upage) && 
+        pg_round_down(fault_addr) <=  pg_round_down(current->spt[k].upage)+(current->spt[k].num_pages) * 4096) {
+        // printf("MATCHED\n");
+        // int bytes = file_read_at(current->spt[k].file, kframe, current->spt[k].read_bytes, current->spt[k].ofs);
+        // printf("NUM PAGES: %d\n", current->spt[k].num_pages);
+        struct file* file = current->spt[k].file;
+        off_t ofs = current->spt[k].ofs;
+        uint8_t* upage = current->spt[k].upage;
+        uint32_t read_bytes = current->spt[k].read_bytes;
+        uint32_t zero_bytes = current->spt[k].zero_bytes;
+        bool writable = current->spt[k].writable;
+        // printf("BEFORE FILE SEEK\n");
+        // printf("Fault addr: %04x\nUPAGE: %04x\n\n", pg_round_down(fault_addr), pg_round_down(current->spt[k].upage));
+        // printf("FILE PTR: %04X\n", current->spt[k].file);
+        file_seek (file, ofs);
+        // printf("AFTER FILE SEEK\n");
+        while (read_bytes > 0 || zero_bytes > 0) 
+        {
+          printf("IN WHILE LOOP: %d\n", read_bytes);
+          /* Calculate how to fill this page.
+             We will read PAGE_READ_BYTES bytes from FILE
+             and zero the final PAGE_ZERO_BYTES bytes. */
+          size_t page_read_bytes = read_bytes < PGSIZE ? read_bytes : PGSIZE;
+          size_t page_zero_bytes = PGSIZE - page_read_bytes;
 
-  void* low_bound = pg_round_down(fault_addr);
-  off_t offset = (int) fault_addr - (int) low_bound;
+          /* Get a page of memory. */
+          uint8_t *kpage = get_frame();
 
-  // check all supplemental page table entries and put the matching one onto memory
-  for(int each_spte = 0; each_spte < 40; each_spte ++){
-    if(supp_table[each_spte].upage == low_bound){
-      // load file from supplemental page to memory
-      void* page = get_frame();
-      file_read_at (supp_table[each_spte].file, page, 4096, offset);
-      return true;
+          /* Load this page. */
+          int i = file_read (file, kpage, page_read_bytes);
+          if (i != (int) page_read_bytes)
+            {
+              printf("file_read res: %d\n", i);
+              printf("file: %04x\n", file);
+              printf("kpage: %04x\n", kpage);
+              printf("page_read_bytes: %d\n", page_read_bytes);
+              free_frame(kpage);
+              PANIC("file_read() failed in lazy loading"); 
+            }
+          memset (kpage + page_read_bytes, 0, page_zero_bytes);
+
+          /* Add the page to the process's address space. */
+          if (!install_page_public (upage, kpage, writable)) 
+            {
+              free_frame(kpage);
+              PANIC("install_page() failed in lazy loading"); 
+            }
+
+          /* Advance. */
+          read_bytes -= page_read_bytes;
+          zero_bytes -= page_zero_bytes;
+          upage += PGSIZE;
+        }
+        file_close(file);
+        // printf("Lazy loading finished!!!\n");
+        return true;
+      }
     }
-  }
-
   return false;
 }
 
@@ -197,75 +248,16 @@ page_fault (struct intr_frame *f)
   } else if(user && (int)f->esp - (int)fault_addr > 32) {
     exit(-1);
   }
-
-  /* Lazy Loading - look through SPT */
-  if(is_user_vaddr(fault_addr)) {
-    // void* lower_bound = pg_round_down(fault_addr);
-    for(int k = 0; k < 40; k++) {
-      if(pg_round_down(current->spt[k].upage) == pg_round_down(fault_addr)) {
-        // printf("MATCHED\n");
-        // int bytes = file_read_at(current->spt[k].file, kframe, current->spt[k].read_bytes, current->spt[k].ofs);
-        
-        struct file* file = current->spt[k].file;
-        off_t ofs = current->spt[k].ofs;
-        uint8_t* upage = current->spt[k].upage;
-        uint32_t read_bytes = current->spt[k].read_bytes;
-        uint32_t zero_bytes = current->spt[k].zero_bytes;
-        bool writable = current->spt[k].writable;
-        file_seek (file, ofs);
-        while (read_bytes > 0 || zero_bytes > 0) 
-        {
-          // printf("IN WHILE LOOP: %d\n", read_bytes);
-          /* Calculate how to fill this page.
-             We will read PAGE_READ_BYTES bytes from FILE
-             and zero the final PAGE_ZERO_BYTES bytes. */
-          size_t page_read_bytes = read_bytes < PGSIZE ? read_bytes : PGSIZE;
-          size_t page_zero_bytes = PGSIZE - page_read_bytes;
-
-          /* Get a page of memory. */
-          uint8_t *kpage = get_frame();
-
-          /* Load this page. */
-          int i = file_read (file, kpage, page_read_bytes);
-          if (i != (int) page_read_bytes)
-            {
-              printf("file_read res: %d\n", i);
-              printf("file: %04x\n", file);
-              printf("kpage: %04x\n", kpage);
-              printf("page_read_bytes: %d\n", page_read_bytes);
-              free_frame(kpage);
-              PANIC("file_read() failed in lazy loading"); 
-            }
-          memset (kpage + page_read_bytes, 0, page_zero_bytes);
-
-          /* Add the page to the process's address space. */
-          if (!install_page_public (upage, kpage, writable)) 
-            {
-              free_frame(kpage);
-              PANIC("install_page() failed in lazy loading"); 
-            }
-
-          /* Advance. */
-          read_bytes -= page_read_bytes;
-          zero_bytes -= page_zero_bytes;
-          upage += PGSIZE;
-        }
-        file_close(file);
-        // printf("Lazy loading finished!!!\n");
-        return;
-      }
-    }
-  }
-
-  /* Look through Swap */
+  printf("FAULT ADDRESS: %04x\n", fault_addr);
+/* Look through Swap */
   if(not_present){
     void* page = pg_round_down(fault_addr);
     // printf("Fault PAGE1: %04x\nRounded PAGE1: %04x\n", fault_addr);
     bool loaded = load_to_mem(page, thread_current());
-    if (!loaded){
+    if (!loaded && is_user_vaddr(fault_addr)){
       // printf("NOT PRESENT AND TRYING TO LOAD FROM DISK");
       loaded = load_from_SPT(thread_current(), fault_addr);
-      loaded = false;
+      // loaded = false;
     }
     if (loaded){
       return;

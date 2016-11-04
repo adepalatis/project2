@@ -24,6 +24,7 @@ bool load_to_mem(void* kpage, struct thread* process){
 	struct ste* swap_entry = get_ste_for_thread(kpage, process);
 
 	if (swap_entry==NULL){
+		// printf("SWAP ENTRY IS NULL\n");
 		return false;
 	}
 	struct block* swap_block = block_get_role (BLOCK_SWAP);

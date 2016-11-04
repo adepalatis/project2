@@ -466,6 +466,7 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
   // file_seek (file, ofs);
 
   /* Add the page to the process' spt */
+  printf("LOAD SEGMENT FILE PTR: %04x\nLS UPAGE: %04x\n", file, upage);
   struct supp_page_table_entry* spte = get_free_spte(thread_current());
   spte->file = file;
   spte->ofs = ofs;
