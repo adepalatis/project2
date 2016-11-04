@@ -470,6 +470,7 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
   spte->file = file;
   spte->ofs = ofs;
   spte->upage = pg_round_down(upage);
+  // spte->upage = upage;
   spte->read_bytes = read_bytes;
   spte->zero_bytes = zero_bytes;
   spte->writable = writable;

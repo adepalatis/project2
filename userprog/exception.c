@@ -200,9 +200,10 @@ page_fault (struct intr_frame *f)
 
   /* Lazy Loading - look through SPT */
   if(is_user_vaddr(fault_addr)) {
-    void* lower_bound = pg_round_down(fault_addr);
+    // void* lower_bound = pg_round_down(fault_addr);
     for(int k = 0; k < 40; k++) {
-      if(current->spt[k].upage == lower_bound) {
+      if(pg_round_down(current->spt[k].upage) == pg_round_down(fault_addr)) {
+        // printf("MATCHED\n");
         // int bytes = file_read_at(current->spt[k].file, kframe, current->spt[k].read_bytes, current->spt[k].ofs);
         
         struct file* file = current->spt[k].file;
@@ -214,7 +215,7 @@ page_fault (struct intr_frame *f)
         file_seek (file, ofs);
         while (read_bytes > 0 || zero_bytes > 0) 
         {
-          printf("IN WHILE LOOP: %d\n", read_bytes);
+          // printf("IN WHILE LOOP: %d\n", read_bytes);
           /* Calculate how to fill this page.
              We will read PAGE_READ_BYTES bytes from FILE
              and zero the final PAGE_ZERO_BYTES bytes. */
@@ -250,6 +251,8 @@ page_fault (struct intr_frame *f)
           upage += PGSIZE;
         }
         file_close(file);
+        // printf("Lazy loading finished!!!\n");
+        return;
       }
     }
   }
